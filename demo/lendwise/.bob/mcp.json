@@ -1,9 +1,8 @@
 {
   "mcpServers": {
     "amend": {
-      "command": "../../.venv/bin/python",
-      "args": ["-m", "amend.mcp_server"],
-      "cwd": "${workspaceFolder}/../.."
+      "command": "/bin/sh",
+      "args": ["-c", "cd \"$(git rev-parse --show-toplevel)\" && exec .venv/bin/python -m amend.mcp_server"]
     }
   }
 }
