@@ -1,0 +1,457 @@
+{
+  "meta": {
+    "run_id": "ftc-2024",
+    "generated_at": "2026-09-26T12:06:26.650895+00:00",
+    "base_ref": "main",
+    "base_sha": "3ef622ce9c84d85b9cd04420b20371082a063643",
+    "head_sha": "fdde25cd72e74fa946a3b2a588cb895d77e7511c"
+  },
+  "status_counts": {
+    "Partially verified": 1,
+    "Verified": 2,
+    "Human review required": 1
+  },
+  "obligations": [
+    {
+      "obligation_id": "SG-3",
+      "citation": "314.4(c)(3)",
+      "quote": "Protect by encryption all customer information held or transmitted by you both in transit over external networks and at rest",
+      "shape": "code",
+      "status": "Partially verified",
+      "impact_sites": [
+        {
+          "obligation_id": "SG-3",
+          "file": "app/logging_mw.py",
+          "line": 14,
+          "kind": "G-LOG",
+          "source": "graph",
+          "rationale": "Log call passes sensitive argument: \"'incoming request method=%s path=%s body=%s'\""
+        },
+        {
+          "obligation_id": "SG-3",
+          "file": "jobs/export_underwriting.py",
+          "line": 27,
+          "kind": "G-EXPORT",
+          "source": "graph",
+          "rationale": "Job export_underwriting writes government_id-class column (after alias trace) to file at line 27"
+        },
+        {
+          "obligation_id": "SG-3",
+          "file": "sql/views.sql",
+          "line": 1,
+          "kind": "data_lineage",
+          "source": "graph",
+          "rationale": "applications.ssn -> v_uw_export.tin -> job:jobs/export_underwriting.py -> file_write:jobs/export_underwriting.py:27"
+        },
+        {
+          "obligation_id": "SG-3",
+          "file": "app/models.py",
+          "line": 24,
+          "kind": "storage",
+          "source": "inferred",
+          "rationale": "applications.ssn and bank_account_number are plain String columns; the canary must confirm whether they are encrypted at rest"
+        }
+      ],
+      "obligation_tests": [
+        {
+          "test_file": "test_sg3_request_logs_exclude_customer_data.py",
+          "base_returncode": 1,
+          "head_returncode": 0,
+          "base_output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________ test_request_logging_never_writes_ssn_or_account_number ____________\n/var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg3_request_logs_exclude_customer_data.py:14: in test_request_logging_never_writes_ssn_or_account_number\n    assert CANARY_SSN not in caplog.text\nE   assert '000-00-0417' not in 'DEBUG    le...ion_ms=6.2\\n'\nE     \nE     '000-00-0417' is contained here:\nE       :1,\"ssn\":\"000-00-0417\",\"bank_account_number\":\"000000417\",\"income\":41700.0}\nE     ?           +++++++++++\nE       INFO     lendwise.http:logging_mw.py:29 request completed method=POST path=/api/v1/applications/ status=201 duration_ms=6.2\n------------------------------ Captured log call -------------------------------\nDEBUG    lendwise.http:logging_mw.py:14 incoming request method=POST path=/api/v1/applications/ body={\"customer_id\":1,\"ssn\":\"000-00-0417\",\"bank_account_number\":\"000000417\",\"income\":41700.0}\nINFO     lendwise.http:logging_mw.py:29 request completed method=POST path=/api/v1/applications/ status=201 duration_ms=6.2\n=============================== warnings summary ===============================\ncompliance/tests/test_sg3_request_logs_exclude_customer_data.py::test_request_logging_never_writes_ssn_or_account_number\n  .venv/lib/python3.14/site-packages/sqlalchemy/sql/schema.py:4296: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore[call-arg, no-any-return, no-untyped-call]  # noqa: E501\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nFAILED ../../../../../../../../../var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg3_request_logs_exclude_customer_data.py::test_request_logging_never_writes_ssn_or_account_number\n",
+          "head_output": ".                                                                        [100%]\n=============================== warnings summary ===============================\ncompliance/tests/test_sg3_request_logs_exclude_customer_data.py::test_request_logging_never_writes_ssn_or_account_number\n  .venv/lib/python3.14/site-packages/sqlalchemy/sql/schema.py:4296: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore[call-arg, no-any-return, no-untyped-call]  # noqa: E501\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n",
+          "discriminating": true,
+          "rejected": false,
+          "rejection_reason": ""
+        },
+        {
+          "test_file": "test_sg3_underwriting_export_excludes_ssn.py",
+          "base_returncode": 1,
+          "head_returncode": 0,
+          "base_output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________ test_underwriting_export_contains_no_ssn ___________________\n/var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg3_underwriting_export_excludes_ssn.py:25: in test_underwriting_export_contains_no_ssn\n    assert CANARY_SSN not in content\nE   AssertionError: assert '000-00-0417' not in 'id,income,s...00-00-0417\\n'\nE     \nE     '000-00-0417' is contained here:\nE       id,income,status,tin\nE       1,41700.0,pending,000-00-0417\nE     ?                   +++++++++++\n=========================== short test summary info ============================\nFAILED ../../../../../../../../../var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg3_underwriting_export_excludes_ssn.py::test_underwriting_export_contains_no_ssn\n",
+          "head_output": ".                                                                        [100%]\n",
+          "discriminating": true,
+          "rejected": false,
+          "rejection_reason": ""
+        }
+      ],
+      "ob_status": "approved",
+      "approved_by": "compliance-lead"
+    },
+    {
+      "obligation_id": "SG-5",
+      "citation": "314.4(c)(5)",
+      "quote": "Implement multi-factor authentication for any individual accessing any information system",
+      "shape": "code",
+      "status": "Verified",
+      "impact_sites": [
+        {
+          "obligation_id": "SG-5",
+          "file": "app/support_legacy.py",
+          "line": 12,
+          "kind": "G-MFA",
+          "source": "graph",
+          "rationale": "Route GET /impersonate/{customer_id} (mounted sub-app) exposes customer data without require_mfa"
+        },
+        {
+          "obligation_id": "SG-5",
+          "file": "app/main.py",
+          "line": 61,
+          "kind": "G-MFA",
+          "source": "graph",
+          "rationale": "Route GET /api/v1/profile (router-level) exposes customer data without require_mfa"
+        },
+        {
+          "obligation_id": "SG-5",
+          "file": "app/auth_routes.py",
+          "line": 54,
+          "kind": "G-MFA-LOGIN",
+          "source": "graph",
+          "rationale": "Route POST /auth/staff/login issues a token/session without verifying a second factor (314.4(c)(5))"
+        },
+        {
+          "obligation_id": "SG-5",
+          "file": "app/auth_routes.py",
+          "line": 63,
+          "kind": "G-MFA-LOGIN",
+          "source": "graph",
+          "rationale": "Route POST /auth/mobile/token issues a token/session without verifying a second factor (314.4(c)(5))"
+        }
+      ],
+      "obligation_tests": [
+        {
+          "test_file": "test_sg5_mobile_path_requires_second_factor.py",
+          "base_returncode": 1,
+          "head_returncode": 0,
+          "base_output": "FF                                                                       [100%]\n=================================== FAILURES ===================================\n______________ test_mobile_token_without_second_factor_is_refused ______________\n/var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg5_mobile_path_requires_second_factor.py:6: in test_mobile_token_without_second_factor_is_refused\n    assert resp.status_code == 401\nE   assert 200 == 401\nE    +  where 200 = <Response [200 OK]>.status_code\n_______________ test_mobile_profile_rejects_session_without_mfa ________________\n/var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg5_mobile_path_requires_second_factor.py:11: in test_mobile_profile_rejects_session_without_mfa\n    assert resp.status_code == 403\nE   assert 200 == 403\nE    +  where 200 = <Response [200 OK]>.status_code\n=========================== short test summary info ============================\nFAILED ../../../../../../../../../var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg5_mobile_path_requires_second_factor.py::test_mobile_token_without_second_factor_is_refused\nFAILED ../../../../../../../../../var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg5_mobile_path_requires_second_factor.py::test_mobile_profile_rejects_session_without_mfa\n",
+          "head_output": "..                                                                       [100%]\n",
+          "discriminating": true,
+          "rejected": false,
+          "rejection_reason": ""
+        },
+        {
+          "test_file": "test_sg5_staff_login_requires_second_factor.py",
+          "base_returncode": 1,
+          "head_returncode": 0,
+          "base_output": "FF                                                                       [100%]\n=================================== FAILURES ===================================\n______________ test_staff_login_without_second_factor_is_refused _______________\n/var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg5_staff_login_requires_second_factor.py:7: in test_staff_login_without_second_factor_is_refused\n    assert resp.status_code == 401\nE   assert 200 == 401\nE    +  where 200 = <Response [200 OK]>.status_code\n____________ test_staff_login_with_second_factor_issues_mfa_session ____________\n/var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg5_staff_login_requires_second_factor.py:16: in test_staff_login_with_second_factor_issues_mfa_session\n    assert decode_token(resp.json()[\"access_token\"]).get(\"mfa\") is True\nE   AssertionError: assert None is True\nE    +  where None = <built-in method get of dict object at 0x109404740>('mfa')\nE    +    where <built-in method get of dict object at 0x109404740> = {'sub': 'ops@lendwise.com', 'role': 'ops', 'exp': 1790427978}.get\nE    +      where {'sub': 'ops@lendwise.com', 'role': 'ops', 'exp': 1790427978} = <function decode_token at 0x108ef0b40>('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJvcHNAbGVuZHdpc2UuY29tIiwicm9sZSI6Im9wcyIsImV4cCI6MTc5MDQyNzk3OH0.V99DZFNHesI6LHagXg-EO6iN79aLWRAUo5FfstC3taU')\n=========================== short test summary info ============================\nFAILED ../../../../../../../../../var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg5_staff_login_requires_second_factor.py::test_staff_login_without_second_factor_is_refused\nFAILED ../../../../../../../../../var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg5_staff_login_requires_second_factor.py::test_staff_login_with_second_factor_issues_mfa_session\n",
+          "head_output": "..                                                                       [100%]\n",
+          "discriminating": true,
+          "rejected": false,
+          "rejection_reason": ""
+        },
+        {
+          "test_file": "test_sg5_support_console_requires_mfa.py",
+          "base_returncode": 1,
+          "head_returncode": 0,
+          "base_output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n__________ test_support_console_refuses_staff_key_without_mfa_session __________\n/var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg5_support_console_requires_mfa.py:7: in test_support_console_refuses_staff_key_without_mfa_session\n    assert resp.status_code in (401, 403)\nE   assert 404 in (401, 403)\nE    +  where 404 = <Response [404 Not Found]>.status_code\n=========================== short test summary info ============================\nFAILED ../../../../../../../../../var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg5_support_console_requires_mfa.py::test_support_console_refuses_staff_key_without_mfa_session\n",
+          "head_output": ".                                                                        [100%]\n",
+          "discriminating": true,
+          "rejected": false,
+          "rejection_reason": ""
+        }
+      ],
+      "ob_status": "approved",
+      "approved_by": "compliance-lead"
+    },
+    {
+      "obligation_id": "SG-7",
+      "citation": "314.4(c)(7)",
+      "quote": "Adopt procedures for change management",
+      "shape": "process",
+      "status": "Human review required",
+      "impact_sites": [],
+      "obligation_tests": [],
+      "ob_status": "approved",
+      "approved_by": "compliance-lead"
+    },
+    {
+      "obligation_id": "SG-9",
+      "citation": "314.4(j)(1)",
+      "quote": "you must notify the Federal Trade Commission as soon as possible, and no later than 30 days after discovery of the event",
+      "shape": "code",
+      "status": "Verified",
+      "impact_sites": [
+        {
+          "obligation_id": "SG-9",
+          "file": "app/incidents.py",
+          "line": 13,
+          "kind": "missing_behavior",
+          "source": "inferred",
+          "rationale": "record_incident stores the incident but creates no FTC notice for events affecting 500 or more consumers"
+        }
+      ],
+      "obligation_tests": [
+        {
+          "test_file": "test_sg9_ftc_notice_for_notification_events.py",
+          "base_returncode": 1,
+          "head_returncode": 0,
+          "base_output": "FF                                                                       [100%]\n=================================== FAILURES ===================================\n______ test_event_affecting_500_consumers_opens_ftc_notice_due_in_30_days ______\n/var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg9_ftc_notice_for_notification_events.py:16: in test_event_affecting_500_consumers_opens_ftc_notice_due_in_30_days\n    from app.incidents import record_incident\n/var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/app/incidents.py:6: in <module>\n    from ..database import get_db\nE   ImportError: attempted relative import beyond top-level package\n__________________ test_event_below_threshold_opens_no_notice __________________\n/var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg9_ftc_notice_for_notification_events.py:28: in test_event_below_threshold_opens_no_notice\n    from app.incidents import record_incident\n/var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/app/incidents.py:6: in <module>\n    from ..database import get_db\nE   ImportError: attempted relative import beyond top-level package\n=========================== short test summary info ============================\nFAILED ../../../../../../../../../var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg9_ftc_notice_for_notification_events.py::test_event_affecting_500_consumers_opens_ftc_notice_due_in_30_days\nFAILED ../../../../../../../../../var/folders/_n/5ss313ds30s_l2pfqbq1m0hw0000gp/T/amend_worktree_nv1s9fol/demo/lendwise/compliance/tests/test_sg9_ftc_notice_for_notification_events.py::test_event_below_threshold_opens_no_notice\n",
+          "head_output": "..                                                                       [100%]\n=============================== warnings summary ===============================\ncompliance/tests/test_sg9_ftc_notice_for_notification_events.py::test_event_affecting_500_consumers_opens_ftc_notice_due_in_30_days\n  .venv/lib/python3.14/site-packages/sqlalchemy/sql/schema.py:4296: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore[call-arg, no-any-return, no-untyped-call]  # noqa: E501\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n",
+          "discriminating": true,
+          "rejected": false,
+          "rejection_reason": ""
+        }
+      ],
+      "ob_status": "approved",
+      "approved_by": "compliance-lead"
+    }
+  ],
+  "guard_findings": [],
+  "canary": {
+    "before": [
+      {
+        "store_type": "sqlite",
+        "path": "var/lendwise.db",
+        "offset_or_line": 147924,
+        "snippet": "\u0000\u0000\u0000\u0000\u0000\u0000\u0000B\ufffdq\b\u0000\u0002#\u001f\u0003\u001bA\u0002Y000-**-****000000417\u0000\ufffd\ufffdpending2",
+        "value_found": "000-00-0417"
+      },
+      {
+        "store_type": "sqlite",
+        "path": "var/lendwise.db",
+        "offset_or_line": 147993,
+        "snippet": ".449252B\ufffdp\b\u0000\u0002#\u001f\u0003\u001bA\u0002Y000-**-****000000417\u0000\ufffd\ufffdpending2",
+        "value_found": "000-00-0417"
+      },
+      {
+        "store_type": "sqlite",
+        "path": "var/lendwise.db",
+        "offset_or_line": 147935,
+        "snippet": "\u0000\u0002#\u001f\u0003\u001bA\u0002Y000-00-0417000***\u0000\ufffd\ufffdpending2026-09-26",
+        "value_found": "000000417"
+      },
+      {
+        "store_type": "sqlite",
+        "path": "var/lendwise.db",
+        "offset_or_line": 148004,
+        "snippet": "\u0000\u0002#\u001f\u0003\u001bA\u0002Y000-00-0417000***\u0000\ufffd\ufffdpending2026-09-26",
+        "value_found": "000000417"
+      },
+      {
+        "store_type": "log",
+        "path": "var/log/app.log",
+        "offset_or_line": 2,
+        "snippet": "2026-09-26 17:36:26,445 DEBUG lendwise.http incoming request method=POST path=/api/v1/applications/ body={\"customer_id\":601,\"ssn\":\"000-**-****\",\"bank_account_number\":\"000000417\",\"income\":41700.0}",
+        "value_found": "000-00-0417"
+      },
+      {
+        "store_type": "log",
+        "path": "var/log/app.log",
+        "offset_or_line": 2,
+        "snippet": "2026-09-26 17:36:26,445 DEBUG lendwise.http incoming request method=POST path=/api/v1/applications/ body={\"customer_id\":601,\"ssn\":\"000-00-0417\",\"bank_account_number\":\"000***\",\"income\":41700.0}",
+        "value_found": "000000417"
+      },
+      {
+        "store_type": "bucket",
+        "path": "var/buckets/analytics/uw_export_2026-09-26.csv",
+        "offset_or_line": 369,
+        "snippet": "368,41700.0,pending,000-**-****",
+        "value_found": "000-00-0417"
+      },
+      {
+        "store_type": "bucket",
+        "path": "var/buckets/analytics/uw_export_2026-09-26.csv",
+        "offset_or_line": 370,
+        "snippet": "369,41700.0,pending,000-**-****",
+        "value_found": "000-00-0417"
+      }
+    ],
+    "after": [
+      {
+        "store_type": "sqlite",
+        "path": "var/lendwise.db",
+        "offset_or_line": 160212,
+        "snippet": "\u0000\u0000\u0000\u0000\u0000\u0000\u0000B\ufffdq\b\u0000\u0002#\u001f\u0003\u001bA\u0002Y000-**-****000000417\u0000\ufffd\ufffdpending2",
+        "value_found": "000-00-0417"
+      },
+      {
+        "store_type": "sqlite",
+        "path": "var/lendwise.db",
+        "offset_or_line": 160281,
+        "snippet": ".445026B\ufffdp\b\u0000\u0002#\u001f\u0003\u001bA\u0002Y000-**-****000000417\u0000\ufffd\ufffdpending2",
+        "value_found": "000-00-0417"
+      },
+      {
+        "store_type": "sqlite",
+        "path": "var/lendwise.db",
+        "offset_or_line": 160223,
+        "snippet": "\u0000\u0002#\u001f\u0003\u001bA\u0002Y000-00-0417000***\u0000\ufffd\ufffdpending2026-09-26",
+        "value_found": "000000417"
+      },
+      {
+        "store_type": "sqlite",
+        "path": "var/lendwise.db",
+        "offset_or_line": 160292,
+        "snippet": "\u0000\u0002#\u001f\u0003\u001bA\u0002Y000-00-0417000***\u0000\ufffd\ufffdpending2026-09-26",
+        "value_found": "000000417"
+      }
+    ]
+  },
+  "git_diff": [
+    {
+      "file": "demo/lendwise/app/auth_routes.py",
+      "insertions": 16,
+      "deletions": 4
+    },
+    {
+      "file": "demo/lendwise/app/incidents.py",
+      "insertions": 38,
+      "deletions": 6
+    },
+    {
+      "file": "demo/lendwise/app/logging_mw.py",
+      "insertions": 8,
+      "deletions": 8
+    },
+    {
+      "file": "demo/lendwise/app/main.py",
+      "insertions": 8,
+      "deletions": 7
+    },
+    {
+      "file": "demo/lendwise/app/models.py",
+      "insertions": 23,
+      "deletions": 1
+    },
+    {
+      "file": "demo/lendwise/compliance/impact/SG-3.json",
+      "insertions": 34,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/impact/SG-5.json",
+      "insertions": 34,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/impact/SG-9.json",
+      "insertions": 10,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/obligations/SG-3.yaml",
+      "insertions": 13,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/obligations/SG-5.yaml",
+      "insertions": 14,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/obligations/SG-7.yaml",
+      "insertions": 12,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/obligations/SG-9.yaml",
+      "insertions": 13,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/test_changes.yaml",
+      "insertions": 16,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/tests/conftest.py",
+      "insertions": 51,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/tests/test_sg3_request_logs_exclude_customer_data.py",
+      "insertions": 15,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/tests/test_sg3_underwriting_export_excludes_ssn.py",
+      "insertions": 26,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/tests/test_sg5_mobile_path_requires_second_factor.py",
+      "insertions": 11,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/tests/test_sg5_staff_login_requires_second_factor.py",
+      "insertions": 16,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/tests/test_sg5_support_console_requires_mfa.py",
+      "insertions": 7,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/compliance/tests/test_sg9_ftc_notice_for_notification_events.py",
+      "insertions": 32,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/infra/buckets.tf",
+      "insertions": 28,
+      "deletions": 0
+    },
+    {
+      "file": "demo/lendwise/jobs/export_underwriting.py",
+      "insertions": 4,
+      "deletions": 3
+    },
+    {
+      "file": "demo/lendwise/sql/views.sql",
+      "insertions": 2,
+      "deletions": 2
+    },
+    {
+      "file": "demo/lendwise/tests/test_auth.py",
+      "insertions": 2,
+      "deletions": 2
+    },
+    {
+      "file": "demo/lendwise/tests/test_export.py",
+      "insertions": 2,
+      "deletions": 1
+    },
+    {
+      "file": "demo/lendwise/tests/test_servicing.py",
+      "insertions": 2,
+      "deletions": 2
+    }
+  ],
+  "integrity": {
+    "findings": [],
+    "approved_changes": [
+      {
+        "file": "tests/test_auth.py",
+        "issue": "modified",
+        "reason": "test_staff_login_success and test_mobile_token_success expected a session without a second factor (314.4(c)(5)); they now send the one-time code",
+        "approved_by": "compliance-lead"
+      },
+      {
+        "file": "tests/test_export.py",
+        "issue": "modified",
+        "reason": "test_export_csv_contents asserted that the analytics export carries the plaintext SSN as \"tin\" (314.4(c)(3)); it now asserts the SSN is absent",
+        "approved_by": "compliance-lead"
+      },
+      {
+        "file": "tests/test_servicing.py",
+        "issue": "modified",
+        "reason": "test_legacy_impersonate_with_valid_key reached a full customer profile with the staff API key alone (314.4(c)(5)); it now also presents an MFA session",
+        "approved_by": "compliance-lead"
+      }
+    ],
+    "clean": true
+  },
+  "regression": {
+    "skipped": false,
+    "returncode": 0,
+    "output": ".....................                                                    [100%]\n=============================== warnings summary ===============================\ntests/test_applications.py::test_create_application\ntests/test_applications.py::test_get_application\ntests/test_servicing.py::test_get_customer_agent_role\n  .venv/lib/python3.14/site-packages/sqlalchemy/sql/schema.py:4296: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore[call-arg, no-any-return, no-untyped-call]  # noqa: E501\n\ntests/test_seed_and_retention.py::test_retention_marks_old_customers\n  demo/lendwise/tests/test_seed_and_retention.py:60: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n    old_date = datetime.datetime.utcnow() - datetime.timedelta(days=8 * 365)\n\ntests/test_seed_and_retention.py::test_retention_marks_old_customers\n  demo/lendwise/tests/test_seed_and_retention.py:61: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n    recent_date = datetime.datetime.utcnow() - datetime.timedelta(days=30)\n\ntests/test_seed_and_retention.py::test_retention_marks_old_customers\n  demo/lendwise/jobs/retention.py:23: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n    cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=7 * 365)\n\ntests/test_seed_and_retention.py::test_retention_marks_old_customers\n  demo/lendwise/jobs/retention.py:30: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n    now = datetime.datetime.utcnow()\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n"
+  },
+  "artifact_hashes": {
+    "matrix.json": "8ef5fe0865b4536f8bd4b377d564aa12759e296838271380f634a35ebc628d57",
+    "certificate.json": "901fef3441998b2841cb562ab5a0331c190c699014e0d307c9d4253d29835d1c",
+    "certificate.md": "b707f9ca883820a87526893bdd6c2352614d20255f941e3943bc60ea2346d1a6",
+    "certificate.html": "88c97ea910e67116097bde21f69dcfa0cbe7b960e5d5d80552acb2ede1a679bc"
+  },
+  "disclaimer": "Impact discovery recall on the Amend benchmark: see benchmark/results; unknown paths may exist. This report states what automated checks verified. It is not a legal opinion and does not assert compliance."
+}

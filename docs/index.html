@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amend</title>
+<meta name="description" content="Amend turns a regulatory change into a verified pull request, running inside IBM Bob.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F4F6F8; --surface:#FFFFFF; --ink:#131A23; --ink-2:#465262; --ink-3:#6B7686;
+  --rule:#D5DBE2; --red:#B3261E; --red-bg:#FBE9E7; --green:#0E6A4E; --green-bg:#E2F1EA;
+  --amber:#8A5A00; --amber-bg:#FBF0D9; --blue:#1F4E8C; --blue-bg:#E4ECF7;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  color-scheme:dark; --paper:#0E131A; --surface:#151C25; --ink:#E7EBF0; --ink-2:#AAB4C1; --ink-3:#8290A1;
+  --rule:#2A3441; --red:#FF7A6E; --red-bg:#3A1A18; --green:#5BD3A4; --green-bg:#12312A;
+  --amber:#F2C265; --amber-bg:#352912; --blue:#8DB6F0; --blue-bg:#16263C;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 var(--body);padding:0 16px 64px}
+a{color:var(--blue)}
+.wrap{max-width:1000px;margin:0 auto}
+header{padding:56px 0 32px;border-bottom:1px solid var(--rule)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin:0 0 20px}
+h1{font:700 clamp(36px,6vw,64px)/1.02 var(--display);margin:0 0 20px;letter-spacing:-.01em;text-wrap:balance}
+.lede{font-size:19px;color:var(--ink-2);max-width:720px;margin:0 0 28px}
+.redline{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:18px 20px;margin:0 0 28px;max-width:760px}
+.redline .cite{font:500 12px var(--mono);color:var(--ink-3);display:block;margin-bottom:6px}
+del{color:var(--red);background:var(--red-bg);text-decoration-thickness:2px}
+ins{color:var(--green);background:var(--green-bg);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-block;padding:10px 16px;border-radius:6px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);text-decoration:none;font-weight:600;font-size:15px}
+.btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+section{padding:40px 0;border-bottom:1px solid var(--rule)}
+h2{font:600 clamp(24px,3.4vw,32px)/1.15 var(--display);margin:0 0 14px}
+.label{font:500 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin:0 0 6px}
+p{max-width:720px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:8px;overflow:hidden;margin:20px 0}
+.stats div{background:var(--surface);padding:16px 18px}
+.stats b{display:block;font:700 30px/1.1 var(--display)}
+.stats span{font-size:14px;color:var(--ink-2)}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:8px;background:var(--surface);margin:16px 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+td code,.mono{font:13px var(--mono)}
+.s{font:500 12px var(--mono);padding:2px 7px;border-radius:3px;white-space:nowrap}
+.v{background:var(--green-bg);color:var(--green)} .p{background:var(--blue-bg);color:var(--blue)} .h{background:var(--amber-bg);color:var(--amber)}
+.steps{list-style:none;padding:0;margin:16px 0;display:grid;gap:8px;counter-reset:s}
+.steps li{display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:baseline;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:10px 14px}
+.steps li::before{counter-increment:s;content:counter(s);font:600 14px var(--mono);color:var(--red)}
+.steps .tag{font:500 11px var(--mono);color:var(--ink-3);white-space:nowrap}
+.bar{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:14px}
+.bar i{display:block;height:14px;background:var(--red);border-radius:2px}
+.bar.after i{background:var(--amber)}
+.bar .n{font:500 13px var(--mono);min-width:88px}
+footer{padding:32px 0;color:var(--ink-3);font-size:13.5px}
+@media (max-width:560px){.steps li{grid-template-columns:28px 1fr}.steps .tag{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="eyebrow">Amend · built with IBM Bob 2.0 · demo regulation 16 CFR Part 314</p>
+  <h1>This sentence just became a bug.</h1>
+  <div class="redline">
+    <span class="cite">16 CFR 314.4(c) · eCFR 2021-01-01 → current</span>
+    <del>Design and implement information safeguards to control the risks you identify through risk assessment</del><br>
+    <ins>(5) Implement multi-factor authentication for any individual accessing any information system</ins>
+  </div>
+  <p class="lede">Amend turns a regulatory change into a pull request that is proven to implement it. It reads the official redline clause by clause, finds where the change lands in the code, drives the fix through IBM Bob, and proves every fix with a test that fails before the change and passes after.</p>
+  <div class="cta">
+    <a class="btn primary" href="certificate.html">Open the evidence certificate</a>
+    <a class="btn" href="https://github.com/TusharTechs/amend">Source on GitHub</a>
+    <a class="btn" href="https://github.com/TusharTechs/amend/compare/main...amend/ftc-safeguards-2024">See the remediation diff</a>
+  </div>
+</header>
+
+<section>
+  <p class="label">Result</p>
+  <h2>What Amend did to Lendwise</h2>
+  <p>Lendwise is a fictional non-bank lender with 13 planted violations of the amended FTC Safeguards Rule, 3 decoys and a comment telling AI agents to skip its export job. All data is synthetic.</p>
+  <div class="stats">
+    <div><b>6 / 6</b><span>obligation test files fail on the base commit and pass after the fix</span></div>
+    <div><b>8 → 4</b><span>plaintext canary hits: bucket, log and database before; database only after</span></div>
+    <div><b>3</b><span>pre-existing tests that asserted the violations, rewritten by a named human</span></div>
+    <div><b>0</b><span>guard findings after the change; the next regression is blocked in CI</span></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>Obligation</th><th>Clause</th><th>Certificate</th><th>What changed</th></tr>
+    <tr><td>SG-5</td><td class="mono">314.4(c)(5)</td><td><span class="s v">Verified</span></td><td>Second factor on staff and mobile login; the profile route and the legacy support console now require an MFA session</td></tr>
+    <tr><td>SG-9</td><td class="mono">314.4(j)(1)</td><td><span class="s v">Verified</span></td><td>Incidents affecting 500+ consumers open an FTC notice due within 30 days, with the (j)(1)(i)–(vi) fields</td></tr>
+    <tr><td>SG-3</td><td class="mono">314.4(c)(3)</td><td><span class="s p">Partially verified</span></td><td>Logs and the analytics export no longer carry SSNs; the canary still finds SSNs at rest in the database, recorded as an open finding</td></tr>
+    <tr><td>SG-7</td><td class="mono">314.4(c)(7)</td><td><span class="s h">Human review required</span></td><td>Change management is a process obligation, routed to its owner</td></tr>
+  </table></div>
+  <div class="bar"><span class="n">before · 8</span><i style="width:80%"></i></div>
+  <div class="bar after"><span class="n">after · 4</span><i style="width:40%"></i></div>
+  <p class="mono" style="color:var(--ink-3)">canary SSN 000-00-0417 · synthetic (area 000 is never issued)</p>
+</section>
+
+<section>
+  <p class="label">How it works</p>
+  <h2>Eight stages, most of them without a model</h2>
+  <ol class="steps">
+    <li><span><b>Redline.</b> Point-in-time versions from the eCFR API, diffed clause by clause; renumbered clauses separated from real amendments.</span><span class="tag">deterministic</span></li>
+    <li><span><b>Obligations.</b> Drafted by the agent; any quote not verbatim in the law is rejected; a named human approves.</span><span class="tag">agent + validator</span></li>
+    <li><span><b>Impact.</b> A code graph of routes, router dependencies, mounts, SQL-view alias lineage and sinks.</span><span class="tag">deterministic</span></li>
+    <li><span><b>Remediate.</b> Test first, proven to fail on the base commit, then the fix.</span><span class="tag">agent</span></li>
+    <li><span><b>Audit.</b> A read-only auditor and a canary sweep that plants a synthetic customer and searches every store.</span><span class="tag">deterministic sweep</span></li>
+    <li><span><b>Prove.</b> Fail-before/pass-after, locked pre-existing tests, regression suite.</span><span class="tag">deterministic</span></li>
+    <li><span><b>Evidence.</b> Traceability matrix and a graded certificate. Never "compliant".</span><span class="tag">deterministic</span></li>
+    <li><span><b>Guard.</b> The same checks as a merge gate in GitHub Actions and a Bob lifecycle hook, citing the clause.</span><span class="tag">0 Bobcoins</span></li>
+  </ol>
+</section>
+
+<section>
+  <p class="label">IBM Bob</p>
+  <h2>Amend runs inside Bob</h2>
+  <p>Amend ships as a Bob pack: five custom modes with enforced separation of duties (the auditor cannot edit; the fixer can edit only app code and new compliance tests), five skills, rules that treat regulation text and code comments as data, an MCP server with nine tools that give Bob facts it cannot invent, and lifecycle hooks that block edits to locked tests and run the guard after every edit. IBM Bob also built Amend's engine, demo app, MCP server, hooks and pack; the sessions are in the repository.</p>
+</section>
+
+<section>
+  <p class="label">Benchmark</p>
+  <h2>Against grep and generic SAST</h2>
+  <div class="tbl"><table>
+    <tr><th>Condition</th><th>Violations found (of 13)</th><th>Findings to triage</th><th>Decoys flagged</th></tr>
+    <tr><td>Keyword search</td><td>11 files touched</td><td>118 lines</td><td>1</td></tr>
+    <tr><td>Semgrep p/python + p/security-audit</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td><b>Amend guard + canary</b></td><td><b>7</b>, each citing a clause</td><td><b>14</b></td><td><b>0</b></td></tr>
+  </table></div>
+  <p style="color:var(--ink-2)">Keyword search points at files with suspicious words, not at violations. Generic SAST rules don't know what a regulation requires. Amend's current rules miss 6 of the 13 (retention of exports, audit events, key storage, role-based masking); the obligation-driven step also caught the missing FTC notice. One seeded repository, built by us.</p>
+</section>
+
+<footer>
+  Not legal advice and not a compliance certification: Amend reports what its checks verified. Regulatory text: 16 CFR Part 314 via the eCFR API, a US Government work in the public domain. Demo data is synthetic. MIT licensed.
+</footer>
+</div>
+</body>
+</html>
