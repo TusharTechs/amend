@@ -104,6 +104,32 @@ def _list_test_files(app_dir: Path) -> list[Path]:
 # Core verify
 # ---------------------------------------------------------------------------
 
+def _split_approved_changes(app_dir: Path, findings: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Separate integrity findings that a named human approved.
+
+    <app>/compliance/test_changes.yaml lists pre-existing tests a human
+    rewrote because they asserted behaviour the obligation now prohibits:
+    [{file, reason, approved_by}]. Only "modified" findings can be approved;
+    deleted tests, fewer asserts and new skip/xfail markers never can.
+    """
+    path = app_dir / "compliance" / "test_changes.yaml"
+    approvals: dict[str, dict] = {}
+    if path.exists():
+        import yaml
+
+        for entry in yaml.safe_load(path.read_text(encoding="utf-8")) or []:
+            if isinstance(entry, dict) and entry.get("file") and entry.get("approved_by"):
+                approvals[str(entry["file"])] = entry
+    unapproved, approved = [], []
+    for f in findings:
+        entry = approvals.get(f["file"])
+        if entry and f["issue"] == "modified":
+            approved.append({**f, "reason": entry.get("reason", ""), "approved_by": entry["approved_by"]})
+        else:
+            unapproved.append(f)
+    return unapproved, approved
+
+
 def verify(repo_root: str | Path, app_dir: str | Path, base_ref: str = "HEAD~1") -> dict:
     """
     Run the full proof-engine pipeline.
@@ -241,6 +267,7 @@ def verify(repo_root: str | Path, app_dir: str | Path, base_ref: str = "HEAD~1")
     ]
     all_pass_head = all(r["head_returncode"] == 0 for r in obligation_results)
     regression_green = regression["skipped"] or regression["returncode"] == 0
+    integrity_findings, approved_changes = _split_approved_changes(app_dir, integrity_findings)
     integrity_clean = len(integrity_findings) == 0
 
     result: dict[str, Any] = {
@@ -248,6 +275,7 @@ def verify(repo_root: str | Path, app_dir: str | Path, base_ref: str = "HEAD~1")
         "obligation_tests": obligation_results,
         "integrity": {
             "findings": integrity_findings,
+            "approved_changes": approved_changes,
             "clean": integrity_clean,
         },
         "regression": regression,

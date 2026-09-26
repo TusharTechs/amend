@@ -244,6 +244,29 @@ def _build_html(cert: dict) -> str:
             f'{rows_html}</table>'
         )
 
+    # Test integrity: pre-existing tests are locked; a human may approve a rewrite
+    integrity = cert.get("integrity", {}) or {}
+    approved_changes = integrity.get("approved_changes", [])
+    integrity_findings = integrity.get("findings", [])
+    integrity_rows = "".join(
+        f'<tr><td><code>{c["file"]}</code></td><td>{c.get("reason", "")}</td>'
+        f'<td>{c.get("approved_by", "")}</td></tr>\n'
+        for c in approved_changes
+    )
+    integrity_html = (
+        ('<p><strong style="color:#b91c1c">Unapproved test changes:</strong> '
+         + ", ".join(f'<code>{f["file"]}</code> ({f["issue"]})' for f in integrity_findings) + '</p>')
+        if integrity_findings else
+        '<p><em style="color:#15803d">No unapproved changes to pre-existing tests.</em></p>'
+    )
+    if approved_changes:
+        integrity_html += (
+            '<p style="margin-top:0.5rem">Pre-existing tests rewritten by a named human because they '
+            'asserted behaviour the obligation prohibits (agents are blocked from editing them):</p>'
+            '<table><tr><th>Test file</th><th>Reason</th><th>Approved by</th></tr>'
+            f'{integrity_rows}</table>'
+        )
+
     # Artifact hashes
     artifact_rows = "".join(
         f'<tr><td><code>{fname}</code></td><td style="font-family:monospace;font-size:0.8em">{h}</td></tr>\n'
@@ -330,6 +353,9 @@ def _build_html(cert: dict) -> str:
 
   <h2>Canary Hits — After</h2>
   {_canary_table(canary_after)}
+
+  <h2>Test Integrity</h2>
+  {integrity_html}
 
   <h2>Artifact Hashes (SHA-256)</h2>
   <table>

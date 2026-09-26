@@ -340,3 +340,41 @@ def test_regression_skipped_when_no_tests_dir(tmp_path):
 
     result = verify(root, app, base_ref="HEAD")
     assert result["regression"]["skipped"] is True
+
+
+def test_human_approved_test_change_is_reported_not_hidden(tmp_path):
+    from amend.verify import _split_approved_changes
+
+    (tmp_path / "compliance").mkdir()
+    (tmp_path / "compliance" / "test_changes.yaml").write_text(
+        "- file: tests/test_auth.py\n"
+        "  reason: asserted staff login without a second factor\n"
+        "  approved_by: compliance-lead\n"
+        "- file: tests/test_export.py\n"
+        "  reason: no approver named\n"
+    )
+    findings = [
+        {"file": "tests/test_auth.py", "issue": "modified"},
+        {"file": "tests/test_export.py", "issue": "modified"},
+        {"file": "tests/test_seed.py", "issue": "deleted"},
+    ]
+    unapproved, approved = _split_approved_changes(tmp_path, findings)
+    assert [f["file"] for f in approved] == ["tests/test_auth.py"]
+    assert approved[0]["approved_by"] == "compliance-lead"
+    assert {f["file"] for f in unapproved} == {"tests/test_export.py", "tests/test_seed.py"}
+
+
+def test_deleted_or_skipped_tests_can_never_be_approved(tmp_path):
+    from amend.verify import _split_approved_changes
+
+    (tmp_path / "compliance").mkdir()
+    (tmp_path / "compliance" / "test_changes.yaml").write_text(
+        "- file: tests/test_a.py\n  approved_by: compliance-lead\n"
+        "- file: tests/test_b.py\n  approved_by: compliance-lead\n"
+    )
+    findings = [
+        {"file": "tests/test_a.py", "issue": "deleted"},
+        {"file": "tests/test_b.py", "issue": "skip_or_xfail_added"},
+    ]
+    unapproved, approved = _split_approved_changes(tmp_path, findings)
+    assert approved == [] and len(unapproved) == 2
