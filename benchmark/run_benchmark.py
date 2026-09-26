@@ -66,7 +66,10 @@ def keyword_findings() -> list[dict]:
 
 
 def semgrep_findings() -> list[dict] | None:
-    exe = shutil.which("semgrep") or str(Path(sys.executable).with_name("semgrep"))
+    # Semgrep pins an older `mcp` package, so install it in its own environment
+    # (e.g. `pipx install semgrep`) and point SEMGREP at it if it is not on PATH.
+    import os
+    exe = os.environ.get("SEMGREP") or shutil.which("semgrep") or str(Path(sys.executable).with_name("semgrep"))
     if not Path(exe).exists():
         return None
     proc = subprocess.run(
