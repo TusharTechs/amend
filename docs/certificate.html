@@ -51,9 +51,9 @@
   <h1>Amend Evidence Certificate</h1>
   <div class="meta-grid">
     <div class="meta-item"><div class="label">Run ID</div><div class="value">ftc-2024</div></div>
-    <div class="meta-item"><div class="label">Generated</div><div class="value">2026-09-26T14:57:35.581920+00:00</div></div>
-    <div class="meta-item"><div class="label">Base SHA</div><div class="value">d75abd1259d2003fb5abc38834ea803872c6f26a</div></div>
-    <div class="meta-item"><div class="label">Head SHA</div><div class="value">531601f4e336c9d630bce58f6cb9971dfcf0a5ac</div></div>
+    <div class="meta-item"><div class="label">Generated</div><div class="value">2026-09-26T15:15:44.752171+00:00</div></div>
+    <div class="meta-item"><div class="label">Base SHA</div><div class="value">c650b46b2fdeb08bea1f0f274070d865aa44b38b</div></div>
+    <div class="meta-item"><div class="label">Head SHA</div><div class="value">b0ce9db0d8648ad40e32f64a10da31dd3f66c8fd</div></div>
     <div class="meta-item"><div class="label">Base Ref</div><div class="value">main</div></div>
   </div>
 
@@ -66,7 +66,7 @@
       <th>Clause</th><th>Quote</th><th>Obligation</th>
       <th>Code Sites</th><th>Tests (base/head)</th><th>Status</th>
     </tr>
-    <tr><td><code>314.4(c)(3)</code></td><td style="font-style:italic;max-width:20em;font-size:0.85em">Protect by encryption all customer information held or transmitted by you both in transit over external networks and at </td><td>SG-3</td><td style="font-size:0.85em"><code>app/logging_mw.py:14</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>jobs/export_underwriting.py:27</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>sql/views.sql:1</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>app/models.py:24</code> <em style="font-size:0.85em;color:#6b7280">inferred</em></td><td style="font-size:0.85em"><span title="test_sg3_request_logs_exclude_customer_data.py">base:✗ head:✓ [D]</span><br><span title="test_sg3_underwriting_export_excludes_ssn.py">base:✗ head:✓ [D]</span></td><td style="color:#1d4ed8;font-weight:600">Partially verified</td></tr>
+    <tr><td><code>314.4(c)(3)</code></td><td style="font-style:italic;max-width:20em;font-size:0.85em">Protect by encryption all customer information held or transmitted by you both in transit over external networks and at rest</td><td>SG-3</td><td style="font-size:0.85em"><code>app/logging_mw.py:14</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>jobs/export_underwriting.py:27</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>sql/views.sql:1</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>app/models.py:24</code> <em style="font-size:0.85em;color:#6b7280">inferred</em></td><td style="font-size:0.85em"><span title="test_sg3_request_logs_exclude_customer_data.py">base:✗ head:✓ [D]</span><br><span title="test_sg3_underwriting_export_excludes_ssn.py">base:✗ head:✓ [D]</span></td><td style="color:#1d4ed8;font-weight:600">Partially verified</td></tr>
 <tr><td><code>314.4(c)(5)</code></td><td style="font-style:italic;max-width:20em;font-size:0.85em">Implement multi-factor authentication for any individual accessing any information system</td><td>SG-5</td><td style="font-size:0.85em"><code>app/support_legacy.py:12</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>app/main.py:61</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>app/auth_routes.py:54</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>app/auth_routes.py:63</code> <em style="font-size:0.85em;color:#6b7280">graph</em></td><td style="font-size:0.85em"><span title="test_sg5_mobile_path_requires_second_factor.py">base:✗ head:✓ [D]</span><br><span title="test_sg5_staff_login_requires_second_factor.py">base:✗ head:✓ [D]</span><br><span title="test_sg5_support_console_requires_mfa.py">base:✗ head:✓ [D]</span></td><td style="color:#15803d;font-weight:600">Verified</td></tr>
 <tr><td><code>314.4(c)(7)</code></td><td style="font-style:italic;max-width:20em;font-size:0.85em">Adopt procedures for change management</td><td>SG-7</td><td style="font-size:0.85em">—</td><td style="font-size:0.85em">—</td><td style="color:#b45309;font-weight:600">Human review required</td></tr>
 <tr><td><code>314.4(j)(1)</code></td><td style="font-style:italic;max-width:20em;font-size:0.85em">you must notify the Federal Trade Commission as soon as possible, and no later than 30 days after discovery of the event</td><td>SG-9</td><td style="font-size:0.85em"><code>app/incidents.py:13</code> <em style="font-size:0.85em;color:#6b7280">inferred</em></td><td style="font-size:0.85em"><span title="test_sg9_ftc_notice_for_notification_events.py">base:✗ head:✓ [D]</span></td><td style="color:#15803d;font-weight:600">Verified</td></tr>
@@ -78,18 +78,18 @@
 
   <h2>Canary Hits — Before</h2>
   <table style="width:100%;font-size:0.85em"><tr><th>Store</th><th>Path</th><th>Offset</th><th>Snippet</th></tr><tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>147924</td><td><code>Y000-**-****000000417 · pending2</code></td></tr>
-<tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>147993</td><td><code>.371469B · Y000-**-****000000417 · pending2</code></td></tr>
+<tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>147993</td><td><code>.519299B · Y000-**-****000000417 · pending2</code></td></tr>
 <tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>147935</td><td><code>Y000-00-0417000*** · pending2026-09-26</code></td></tr>
 <tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>148004</td><td><code>Y000-00-0417000*** · pending2026-09-26</code></td></tr>
-<tr><td>log</td><td><code>var/log/app.log</code></td><td>2</td><td><code>2026-09-26 20:27:35,367 DEBUG lendwise.http incoming request method=POST path=/a</code></td></tr>
-<tr><td>log</td><td><code>var/log/app.log</code></td><td>2</td><td><code>2026-09-26 20:27:35,367 DEBUG lendwise.http incoming request method=POST path=/a</code></td></tr>
+<tr><td>log</td><td><code>var/log/app.log</code></td><td>2</td><td><code>2026-09-26 20:45:44,515 DEBUG lendwise.http incoming request method=POST path=/a</code></td></tr>
+<tr><td>log</td><td><code>var/log/app.log</code></td><td>2</td><td><code>2026-09-26 20:45:44,515 DEBUG lendwise.http incoming request method=POST path=/a</code></td></tr>
 <tr><td>bucket</td><td><code>var/buckets/analytics/uw_export_2026-09-26.csv</code></td><td>369</td><td><code>368,41700.0,pending,000-**-****</code></td></tr>
 <tr><td>bucket</td><td><code>var/buckets/analytics/uw_export_2026-09-26.csv</code></td><td>370</td><td><code>369,41700.0,pending,000-**-****</code></td></tr>
 </table>
 
   <h2>Canary Hits — After</h2>
   <table style="width:100%;font-size:0.85em"><tr><th>Store</th><th>Path</th><th>Offset</th><th>Snippet</th></tr><tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>160212</td><td><code>Y000-**-****000000417 · pending2</code></td></tr>
-<tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>160281</td><td><code>.356805B · Y000-**-****000000417 · pending2</code></td></tr>
+<tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>160281</td><td><code>.387165B · Y000-**-****000000417 · pending2</code></td></tr>
 <tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>160223</td><td><code>Y000-00-0417000*** · pending2026-09-26</code></td></tr>
 <tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>160292</td><td><code>Y000-00-0417000*** · pending2026-09-26</code></td></tr>
 </table>
@@ -104,8 +104,8 @@
   <table>
     <tr><th>File</th><th>SHA-256</th></tr>
     <tr><td><code>matrix.json</code></td><td style="font-family:monospace;font-size:0.8em">0a6b48c95274e3ff8c3301a7291e3cad1ac6abb8941a58c229183959498fa4cb</td></tr>
-<tr><td><code>certificate.json</code></td><td style="font-family:monospace;font-size:0.8em">ac134fc48e02ed4fdc20fab75c1236d336b544939303ef37a288af5f3669c222</td></tr>
-<tr><td><code>certificate.md</code></td><td style="font-family:monospace;font-size:0.8em">b497b0f4b9c5f348fc6262df945e35f112e50a94840d9691e3e3a8e2e92e15dc</td></tr>
+<tr><td><code>certificate.json</code></td><td style="font-family:monospace;font-size:0.8em">5d0d6130bfe93f208c13cceeaebb48579d31758bd79ea3d10ea8f1501e2998d5</td></tr>
+<tr><td><code>certificate.md</code></td><td style="font-family:monospace;font-size:0.8em">ab17f53065b0a3f2b64177b9c058969f053c393983beb2db5db9b97d8cb13752</td></tr>
 
   </table>
 

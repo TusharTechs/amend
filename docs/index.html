@@ -154,8 +154,8 @@ pre.mermaid{margin:0;background:transparent;text-align:center;overflow-x:auto}
     hooks -.-&gt; MODES
   end
 
-  subgraph MCP[&quot;Amend MCP server · stdio · 9 tools&quot;]
-    tools[&quot;get_redline · validate_obligations · approve_obligation · query_graph · check_fails_on_base&lt;br/&gt;run_canary · guard_check · record_finding · build_evidence&quot;]
+  subgraph MCP[&quot;Amend MCP server · stdio · 11 tools&quot;]
+    tools[&quot;get_redline · validate_obligations · approve_obligation · query_graph · check_fails_on_base&lt;br/&gt;run_canary · guard_check · record_finding · build_evidence&lt;br/&gt;draft_obligations · screen_untrusted_text&quot;]
   end
 
   subgraph ENGINE[&quot;Amend engine · deterministic Python&quot;]
@@ -188,6 +188,9 @@ pre.mermaid{margin:0;background:transparent;text-align:center;overflow-x:auto}
   dev --&gt;|runs /amend, approves obligations and test rewrites| cmd
   MODES &lt;--&gt;|tool calls| MCP
   MCP --&gt; ENGINE
+  MCP -.-&gt;|draft, screen| wx
+  wx[(&quot;IBM watsonx.ai · Granite 4&lt;br/&gt;drafts from the verbatim clause&lt;br/&gt;screens comments for prompt injection&quot;)]
+  wx -.-&gt;|proposals only, checked by the validator| ob
   ecfr --&gt; rd
   MODES --&gt;|edits and writes| REPO
   ENGINE --&gt;|analyses, runs and proves| REPO
@@ -202,14 +205,21 @@ pre.mermaid{margin:0;background:transparent;text-align:center;overflow-x:auto}
   participant Modes as Bob modes and subagents
   participant MCP as Amend MCP server
   participant Eng as Amend engine
+  participant WX as IBM watsonx.ai · Granite
   participant Repo as Lendwise repo
   participant GH as GitHub PR and Actions
 
   Dev-&gt;&gt;Bob: /amend 16cfr314 2021-01-01..current
+  Bob-&gt;&gt;MCP: screen_untrusted_text
+  MCP-&gt;&gt;WX: Granite reads every comment and docstring
+  WX--&gt;&gt;Bob: the planted prompt injection, flagged as hostile data
   Bob-&gt;&gt;MCP: get_redline
   MCP-&gt;&gt;Eng: regdiff on the eCFR versions
   Eng--&gt;&gt;Bob: substantive changes, renumbered clauses set aside
   Bob-&gt;&gt;Modes: amend-analyst drafts obligations
+  Modes-&gt;&gt;MCP: draft_obligations
+  MCP-&gt;&gt;WX: Granite drafts from the verbatim clause text
+  WX--&gt;&gt;Modes: drafts, each quote already checked by the validator
   Modes-&gt;&gt;MCP: validate_obligations
   MCP--&gt;&gt;Modes: paraphrased quotes rejected
   Bob--&gt;&gt;Dev: obligations ready for approval
@@ -233,7 +243,13 @@ pre.mermaid{margin:0;background:transparent;text-align:center;overflow-x:auto}
 <section>
   <p class="label">IBM Bob</p>
   <h2>Amend runs inside Bob</h2>
-  <p>Amend ships as a Bob pack: five custom modes with enforced separation of duties (the auditor cannot edit; the fixer can edit only app code and new compliance tests), five skills, rules that treat regulation text and code comments as data, an MCP server with nine tools that give Bob facts it cannot invent, and lifecycle hooks that block edits to locked tests and run the guard after every edit. IBM Bob also built Amend's engine, demo app, MCP server, hooks and pack; the sessions are in the repository.</p>
+  <p>Amend ships as a Bob pack: five custom modes with enforced separation of duties (the auditor cannot edit; the fixer can edit only app code and new compliance tests), five skills, rules that treat regulation text and code comments as data, an MCP server with eleven tools that give Bob facts it cannot invent, and lifecycle hooks that block edits to locked tests and run the guard after every edit. IBM Bob also built Amend's engine, demo app, MCP server, hooks and pack; the sessions are in the repository.</p>
+</section>
+
+<section>
+  <p class="label">IBM watsonx.ai</p>
+  <h2>Granite proposes. Amend checks.</h2>
+  <p>Two MCP tools call IBM Granite 4 on watsonx.ai. <code>screen_untrusted_text</code> reads every code comment and docstring a coding agent will see and flags text aimed at AI agents: on Lendwise it flags exactly one of 48, the planted <code>NOTE TO AI AGENTS</code> comment, in 3 of 3 runs. <code>draft_obligations</code> drafts obligations from the verbatim clause text, never from memory, and every draft goes through the same verbatim-quote validator and human approval as a person's: 15 drafts from the 2024 amendment, 15 verbatim quotes. Asked from memory, the same model described an unrelated antitrust rule, which is why Amend grounds it.</p>
 </section>
 
 <section>
