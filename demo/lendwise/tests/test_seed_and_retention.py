@@ -27,6 +27,7 @@ def test_seed_creates_customers():
             # Re-import with fresh engine
             import importlib
             import app.database as db_mod
+            saved_engine, saved_session = db_mod.engine, db_mod.SessionLocal
             db_mod.engine = create_engine(db_url, connect_args={"check_same_thread": False})
             db_mod.SessionLocal = sessionmaker(bind=db_mod.engine)
 
@@ -41,6 +42,8 @@ def test_seed_creates_customers():
             session.close()
             assert count == 600
         finally:
+            db_mod.engine.dispose()
+            db_mod.engine, db_mod.SessionLocal = saved_engine, saved_session
             if original is None:
                 del os.environ["DATABASE_URL"]
             else:
@@ -76,3 +79,4 @@ def test_retention_marks_old_customers():
         assert old.deleted_at is not None
         assert recent.deleted_at is None
         session.close()
+        engine.dispose()
