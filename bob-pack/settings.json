@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "../../.venv/bin/python -m amend.hooks pre-tool-use",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "../../.venv/bin/python -m amend.hooks post-tool-use",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

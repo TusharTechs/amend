@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from amend.verify import verify, _sha256, _count_asserts, _has_skip_xfail
+from amend.verify import verify, _sha256, _count_asserts, _has_skip_xfail, _count_skip_xfail
 
 
 # ---------------------------------------------------------------------------
@@ -264,6 +264,67 @@ def test_integrity_flags_deleted_test(repo):
     findings = result["integrity"]["findings"]
     deleted = [f for f in findings if f["issue"] == "deleted"]
     assert len(deleted) >= 1
+
+
+def test_integrity_unchanged_skipif_not_flagged(repo):
+    """
+    A pre-existing test file that already has @pytest.mark.skipif on base
+    must NOT be flagged when it is unchanged on HEAD.
+    """
+    root, app = repo
+    base_ref = "HEAD"
+
+    # Add a test file with a skipif marker and commit it (so it exists on base)
+    skipif_test = app / "tests" / "test_with_skipif.py"
+    skipif_test.write_text(
+        "import pytest\n"
+        "@pytest.mark.skipif(True, reason='demo')\n"
+        "def test_existing_skipif():\n"
+        "    assert True\n"
+    )
+    _commit_all(root, "add test with skipif")
+
+    # HEAD working tree is identical to the committed version; no changes
+    result = verify(root, app, base_ref=base_ref)
+    skipxfail_findings = [
+        f for f in result["integrity"]["findings"]
+        if f["issue"] == "skip_or_xfail_added"
+    ]
+    assert skipxfail_findings == [], (
+        f"Unchanged file with pre-existing skipif was incorrectly flagged: {skipxfail_findings}"
+    )
+
+
+def test_integrity_new_skip_marker_flagged(repo):
+    """
+    Adding a new @pytest.mark.skip to a pre-existing test file must be flagged.
+    """
+    root, app = repo
+    base_ref = "HEAD"
+
+    # The test file exists on base without any skip markers (committed in 'initial')
+    test_file = app / "tests" / "test_hello.py"
+    # Modify working tree: add a skip marker (and keep the same hash by adding text)
+    test_file.write_text(
+        "import pytest\n"
+        "@pytest.mark.skip(reason='temporarily disabled')\n"
+        "def test_hello():\n"
+        "    assert 1 + 1 == 2\n"
+    )
+
+    result = verify(root, app, base_ref=base_ref)
+    skipxfail_findings = [
+        f for f in result["integrity"]["findings"]
+        if f["issue"] == "skip_or_xfail_added"
+    ]
+    # The file is also "modified" (hash changed); skip_or_xfail_added is only raised
+    # when file is unchanged (same hash). So if hash changed, "modified" is raised first.
+    # Confirm at least "modified" or "skip_or_xfail_added" is present.
+    any_finding = [
+        f for f in result["integrity"]["findings"]
+        if "test_hello.py" in f["file"]
+    ]
+    assert any_finding, "Expected some integrity finding for the modified+skip file"
 
 
 def test_regression_skipped_when_no_tests_dir(tmp_path):

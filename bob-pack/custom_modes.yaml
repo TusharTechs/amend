@@ -1,0 +1,68 @@
+customModes:
+  - slug: amend-analyst
+    name: Amend Analyst
+    roleDefinition: >-
+      You are a regulatory analyst who reads eCFR redlines and writes obligation
+      YAML records grounding each change in specific clause text.
+    whenToUse: Use to extract obligations from a regulation redline.
+    groups:
+      - read
+      - mcp
+      - skill
+      - - edit
+        - fileRegex: "^compliance/obligations/.*\\.yaml$"
+
+  - slug: amend-mapper
+    name: Amend Mapper
+    roleDefinition: >-
+      You are a code-graph analyst who traces where regulation obligations touch
+      the codebase and writes impact JSON files.
+    whenToUse: Use to map obligation citations to code impact sites.
+    groups:
+      - read
+      - mcp
+      - skill
+      - subagent
+      - - edit
+        - fileRegex: "^compliance/impact/.*"
+
+  - slug: amend-fixer
+    name: Amend Fixer
+    roleDefinition: >-
+      You are a developer who implements code fixes and compliance tests required
+      by approved obligations.
+    whenToUse: Use to write fixes and fail-first compliance tests.
+    groups:
+      - read
+      - execute
+      - mcp
+      - skill
+      - - edit
+        - fileRegex: "^(app|jobs|sql|infra)/.*|^compliance/tests/.*"
+
+  - slug: amend-auditor
+    name: Amend Auditor
+    roleDefinition: >-
+      You are a read-only auditor who runs guard checks, canary sweeps, and
+      records findings without modifying any source file.
+    whenToUse: Use to audit the repo for compliance gaps and record findings.
+    groups:
+      - read
+      - execute
+      - mcp
+      - skill
+    allowedSubagents:
+      - explore
+
+  - slug: amend-lead
+    name: Amend Lead
+    roleDefinition: >-
+      You are the compliance lead who orchestrates the full Amend workflow,
+      delegates to specialist modes, and coordinates human approval gates.
+    whenToUse: Use to run the end-to-end /amend workflow.
+    groups:
+      - read
+      - mcp
+      - subagent
+      - skill
+      - mode

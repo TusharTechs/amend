@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "amend": {
+      "command": "../../.venv/bin/python",
+      "args": ["-m", "amend.mcp_server"],
+      "cwd": "${workspaceFolder}/../.."
+    }
+  }
+}

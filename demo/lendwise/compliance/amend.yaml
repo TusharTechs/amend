@@ -1,0 +1,10 @@
+regulation: 16cfr314
+regulations_folder: ../../regulations/16cfr314
+from_date: "2021-01-01"
+to_date: "2026-09-01"
+also_date: "2023-07-01"
+base_ref: main
+mfa_dependency: require_mfa
+approvers:
+  - compliance-lead
+app_dir: demo/lendwise

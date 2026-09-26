@@ -43,6 +43,11 @@ def _has_skip_xfail(source: str) -> bool:
     return bool(re.search(r"pytest\.(?:skip|xfail|mark\.skip|mark\.xfail)", source))
 
 
+def _count_skip_xfail(source: str) -> int:
+    """Count the number of pytest skip/skipif/xfail markers in *source*."""
+    return len(re.findall(r"pytest\.(?:skip|xfail|mark\.skip(?:if)?|mark\.xfail)", source))
+
+
 def _obligation_test_pattern(ob_id: str) -> str:
     """Return glob pattern for a given obligation id."""
     normed = ob_id.lower().replace("-", "")
@@ -120,13 +125,13 @@ def verify(repo_root: str | Path, app_dir: str | Path, base_ref: str = "HEAD~1")
     head_test_files = _list_test_files(app_dir)
     head_hashes: dict[str, str] = {}
     head_asserts: dict[str, int] = {}
-    head_skipxfail: dict[str, bool] = {}
+    head_skipxfail: dict[str, int] = {}
     for p in head_test_files:
         rel = str(p.relative_to(app_dir))
         head_hashes[rel] = _sha256(p)
         src = p.read_text(encoding="utf-8")
         head_asserts[rel] = _count_asserts(src)
-        head_skipxfail[rel] = _has_skip_xfail(src)
+        head_skipxfail[rel] = _count_skip_xfail(src)
 
     # ── 3. Worktree at base_ref for fail-before ───────────────────────────────
     worktree: Path | None = None
@@ -136,6 +141,7 @@ def verify(repo_root: str | Path, app_dir: str | Path, base_ref: str = "HEAD~1")
     integrity_findings: list[dict] = []
     base_test_hashes: dict[str, str] = {}
     base_asserts: dict[str, int] = {}
+    base_skipxfail: dict[str, int] = {}
 
     try:
         worktree = _git_worktree_add(repo_root, base_ref)
@@ -148,6 +154,7 @@ def verify(repo_root: str | Path, app_dir: str | Path, base_ref: str = "HEAD~1")
             base_test_hashes[rel] = _sha256(p)
             src = p.read_text(encoding="utf-8")
             base_asserts[rel] = _count_asserts(src)
+            base_skipxfail[rel] = _count_skip_xfail(src)
 
         # Integrity checks
         for rel, base_hash in base_test_hashes.items():
@@ -157,7 +164,7 @@ def verify(repo_root: str | Path, app_dir: str | Path, base_ref: str = "HEAD~1")
                 integrity_findings.append({"file": rel, "issue": "modified"})
             elif head_asserts.get(rel, 0) < base_asserts.get(rel, 0):
                 integrity_findings.append({"file": rel, "issue": "assert_count_decreased"})
-            elif head_skipxfail.get(rel, False):
+            elif head_skipxfail.get(rel, 0) > base_skipxfail.get(rel, 0):
                 integrity_findings.append({"file": rel, "issue": "skip_or_xfail_added"})
 
         # Obligation tests: fail-before / pass-after
