@@ -196,7 +196,7 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/pytest -q                                                    # engine + demo tests
 ```
 
-In IBM Bob: open `demo/lendwise` as the workspace. The `amend` MCP server starts from the repository root (it finds it with git, so `.venv` must exist there); check that it shows as connected with nine tools, then run `/amend`.
+In IBM Bob: open `demo/lendwise` as the workspace. Bob starts MCP servers from `/` with a minimal environment, so `.bob/mcp.json` changes into the repository at `$AMEND_HOME`, which defaults to `~/Documents/amend`. If you cloned it somewhere else, add `"env": {"AMEND_HOME": "/path/to/amend"}` to the `amend` entry. Check that the server shows as connected with nine tools, then run `/amend`.
 
 ## Safety model
 
