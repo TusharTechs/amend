@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Amend</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:image" content="https://tushartechs.github.io/amend/assets/amend-cover-1200x630.png">
 <meta name="description" content="Amend turns a regulatory change into a verified pull request, running inside IBM Bob.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +29,8 @@
 body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 var(--body);padding:0 16px 64px}
 a{color:var(--blue)}
 .wrap{max-width:1000px;margin:0 auto}
-header{padding:56px 0 32px;border-bottom:1px solid var(--rule)}
+.logo img{display:block;height:44px;width:auto;margin:0 0 28px}
+header{padding:48px 0 32px;border-bottom:1px solid var(--rule)}
 .eyebrow{font:500 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin:0 0 20px}
 h1{font:700 clamp(36px,6vw,64px)/1.02 var(--display);margin:0 0 20px;letter-spacing:-.01em;text-wrap:balance}
 .lede{font-size:19px;color:var(--ink-2);max-width:720px;margin:0 0 28px}
@@ -69,6 +73,10 @@ pre.mermaid{margin:0;background:transparent;text-align:center;overflow-x:auto}
 <body>
 <div class="wrap">
 <header>
+  <picture class="logo">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/amend-logo-dark.svg">
+    <img src="assets/amend-logo-light.svg" alt="Amend" height="44">
+  </picture>
   <p class="eyebrow">Amend · built with IBM Bob 2.0 · demo regulation 16 CFR Part 314</p>
   <h1>This sentence just became a bug.</h1>
   <div class="redline">
@@ -97,7 +105,7 @@ pre.mermaid{margin:0;background:transparent;text-align:center;overflow-x:auto}
   <div class="tbl"><table>
     <tr><th>Obligation</th><th>Clause</th><th>Certificate</th><th>What changed</th></tr>
     <tr><td>SG-5</td><td class="mono">314.4(c)(5)</td><td><span class="s v">Verified</span></td><td>Second factor on staff and mobile login; the profile route and the legacy support console now require an MFA session</td></tr>
-    <tr><td>SG-9</td><td class="mono">314.4(j)(1)</td><td><span class="s v">Verified</span></td><td>Incidents affecting 500+ consumers open an FTC notice due within 30 days, with the (j)(1)(i)–(vi) fields</td></tr>
+    <tr><td>SG-9</td><td class="mono">314.4(j)(1)</td><td><span class="s v">Verified</span></td><td>Incidents affecting 500+ consumers open an FTC notice due within 30 days, with the fields listed in (j)(1)(i) to (vi)</td></tr>
     <tr><td>SG-3</td><td class="mono">314.4(c)(3)</td><td><span class="s p">Partially verified</span></td><td>Logs and the analytics export no longer carry SSNs; the canary still finds SSNs at rest in the database, recorded as an open finding</td></tr>
     <tr><td>SG-7</td><td class="mono">314.4(c)(7)</td><td><span class="s h">Human review required</span></td><td>Change management is a process obligation, routed to its owner</td></tr>
   </table></div>

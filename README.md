@@ -1,8 +1,13 @@
-# Amend
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/amend-logo-dark.svg">
+    <img alt="Amend" src="docs/assets/amend-logo-light.svg" height="72">
+  </picture>
+</h1>
 
-**Regulatory redlines in. Verified pull requests out.**
+<p align="center"><b>Regulatory redlines in. Verified pull requests out.</b></p>
 
-Amend turns a change in a regulation into a pull request that is proven to implement it. It reads the official redline clause by clause, finds every place the change lands in the code, drives the fix through IBM Bob, and proves each fix with a test that fails before the change and passes after. The result is a pull request plus an evidence pack an examiner can read. Afterwards the regulation stays in CI as a merge check, so no later change — human or AI — can quietly undo it.
+Amend turns a change in a regulation into a pull request that is proven to implement it. It reads the official redline clause by clause, finds every place the change lands in the code, drives the fix through IBM Bob, and proves each fix with a test that fails before the change and passes after. The result is a pull request plus an evidence pack an examiner can read. Afterwards the regulation stays in CI as a merge check, so no later change, by a human or an AI, can quietly undo it.
 
 > Built for the IBM Bob 2.0 Hackathon (lablab.ai, September 2026). Demo regulation: the FTC Safeguards Rule, 16 CFR Part 314.
 
@@ -145,8 +150,8 @@ The remediation run is on branch **`amend/ftc-safeguards-2024`** (commits in rev
 | Obligation | Clause | Certificate | Why |
 |---|---|---|---|
 | SG-5 | §314.4(c)(5) MFA for any individual | **Verified** | Staff login, mobile token, `/api/v1/profile` and the legacy support console now require a second factor; 4 tests fail before, pass after |
-| SG-9 | §314.4(j)(1) notify the FTC within 30 days | **Verified** | Incidents affecting 500+ consumers open an FTC notice with the (j)(1)(i)–(vi) fields; the test also exposed that the incidents module could not be imported |
-| SG-3 | §314.4(c)(3) encryption at rest and in transit | **Partially verified** | Request logs and the analytics export no longer carry SSNs, but the canary still finds SSNs at rest in the database — recorded as an open finding |
+| SG-9 | §314.4(j)(1) notify the FTC within 30 days | **Verified** | Incidents affecting 500+ consumers open an FTC notice with the fields listed in (j)(1)(i) to (vi); the test also exposed that the incidents module could not be imported |
+| SG-3 | §314.4(c)(3) encryption at rest and in transit | **Partially verified** | Request logs and the analytics export no longer carry SSNs, but the canary still finds SSNs at rest in the database, recorded as an open finding |
 | SG-7 | §314.4(c)(7) change management | **Human review required** | A process obligation; routed to its owner instead of changing code |
 
 - **Canary:** 8 plaintext hits in the analytics bucket, the request log and the database before; 4, all in the database, after.
@@ -177,9 +182,9 @@ Detection on the seeded Lendwise (13 planted violations, 3 decoys). All conditio
 |---|---|---|---|
 | Keyword search (`ssn`, `token`, `mfa`, …) | 11 files touched | 118 lines | 1 |
 | Semgrep `p/python` + `p/security-audit` | 0 | 0 | 0 |
-| **Amend guard + canary** | **7** (V1–V7) | **14**, each citing a clause | **0** |
+| **Amend guard + canary** | **7** (V1 to V7) | **14**, each citing a clause | **0** |
 
-How to read it: keyword search points at files that contain suspicious words, not at violations, so its count is generous; someone still has to triage 118 lines and decide. Generic SAST rules do not know what a regulation requires. Amend's deterministic stages found 7 violations with no false positives; in the remediation run the obligation-driven mapping also caught V11 (no FTC notice). Amend's current rules miss V8–V10 and V12–V13 (retention of exports, audit events, key storage, role-based masking) — the next rule packs. n = 1 seeded repository, built by us.
+How to read it: keyword search points at files that contain suspicious words, not at violations, so its count is generous; someone still has to triage 118 lines and decide. Generic SAST rules do not know what a regulation requires. Amend's deterministic stages found 7 violations with no false positives; in the remediation run the obligation-driven mapping also caught V11 (no FTC notice). Amend's current rules miss V8 to V10, V12 and V13 (retention of exports, audit events, key storage, role-based masking). Those are the next rule packs. n = 1 seeded repository, built by us.
 
 ## Quickstart
 
@@ -202,7 +207,7 @@ In IBM Bob: open `demo/lendwise` as the workspace. The `amend` MCP server starts
 
 ## What Amend does not claim
 
-Not legal advice and not a compliance certification. Impact discovery can miss paths — the benchmark shows which. The demo repository and its violations were built by us.
+Not legal advice and not a compliance certification. Impact discovery can miss paths, and the benchmark shows which. The demo repository and its violations were built by us.
 
 ## Sources
 
