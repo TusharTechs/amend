@@ -1,0 +1,14 @@
+id: SG-5
+citation: 314.4(c)(5)
+version: '2026-09-01'
+change: added
+quote: Implement multi-factor authentication for any individual accessing any information
+  system
+statement: Every person who reaches a system holding customer information, customers
+  and staff alike, passes a second factor first. This covers staff login, the mobile
+  token path and the legacy support console. Lendwise does not rely on the clause's
+  alternative of Qualified-Individual-approved equivalent controls.
+shape: code
+status: approved
+exceptions: []
+approved_by: compliance-lead

@@ -1,0 +1,34 @@
+[
+  {
+    "obligation_id": "SG-3",
+    "file": "app/logging_mw.py",
+    "line": 14,
+    "kind": "G-LOG",
+    "source": "graph",
+    "rationale": "Log call passes sensitive argument: \"'incoming request method=%s path=%s body=%s'\""
+  },
+  {
+    "obligation_id": "SG-3",
+    "file": "jobs/export_underwriting.py",
+    "line": 27,
+    "kind": "G-EXPORT",
+    "source": "graph",
+    "rationale": "Job export_underwriting writes government_id-class column (after alias trace) to file at line 27"
+  },
+  {
+    "obligation_id": "SG-3",
+    "file": "sql/views.sql",
+    "line": 1,
+    "kind": "data_lineage",
+    "source": "graph",
+    "rationale": "applications.ssn -> v_uw_export.tin -> job:jobs/export_underwriting.py -> file_write:jobs/export_underwriting.py:27"
+  },
+  {
+    "obligation_id": "SG-3",
+    "file": "app/models.py",
+    "line": 24,
+    "kind": "storage",
+    "source": "inferred",
+    "rationale": "applications.ssn and bank_account_number are plain String columns; the canary must confirm whether they are encrypted at rest"
+  }
+]

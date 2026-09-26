@@ -1,0 +1,34 @@
+[
+  {
+    "obligation_id": "SG-5",
+    "file": "app/support_legacy.py",
+    "line": 12,
+    "kind": "G-MFA",
+    "source": "graph",
+    "rationale": "Route GET /impersonate/{customer_id} (mounted sub-app) exposes customer data without require_mfa"
+  },
+  {
+    "obligation_id": "SG-5",
+    "file": "app/main.py",
+    "line": 61,
+    "kind": "G-MFA",
+    "source": "graph",
+    "rationale": "Route GET /api/v1/profile (router-level) exposes customer data without require_mfa"
+  },
+  {
+    "obligation_id": "SG-5",
+    "file": "app/auth_routes.py",
+    "line": 54,
+    "kind": "G-MFA-LOGIN",
+    "source": "graph",
+    "rationale": "Route POST /auth/staff/login issues a token/session without verifying a second factor (314.4(c)(5))"
+  },
+  {
+    "obligation_id": "SG-5",
+    "file": "app/auth_routes.py",
+    "line": 63,
+    "kind": "G-MFA-LOGIN",
+    "source": "graph",
+    "rationale": "Route POST /auth/mobile/token issues a token/session without verifying a second factor (314.4(c)(5))"
+  }
+]
