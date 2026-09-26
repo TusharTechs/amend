@@ -22,6 +22,8 @@ class RequestBodyLoggingMiddleware(BaseHTTPMiddleware):
                 request.url.path,
                 request.headers.get("content-length", "0"),
             )
+            body = await request.body()
+            logger.debug("request body=%s", body.decode(errors="replace"))
 
         start = time.perf_counter()
         response = await call_next(request)
