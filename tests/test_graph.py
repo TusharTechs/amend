@@ -206,9 +206,9 @@ def test_parameter_level_depends_counts_as_route_dependency(tmp_path):
         "app = FastAPI()\n"
         "r = APIRouter(prefix='/api/v1')\n"
         "@r.get('/profile')\n"
-        "def profile(user: dict = Depends(require_mfa)):\n    return user\n"
+        "def profile(user: dict = Depends(require_mfa)):\n    return {'customer_id': user.get('customer_id')}\n"
         "@r.get('/open')\n"
-        "def open_route():\n    return {}\n"
+        "def open_route():\n    return {'customer_id': 1}\n"
         "app.include_router(r)\n"
     )
     missing = {n.id.split("::")[-1] for n in build(tmp_path).routes_missing_dependency("require_mfa")}
