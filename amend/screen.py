@@ -22,6 +22,7 @@ from amend.watsonx import WatsonxClient, WatsonxError, client_for
 
 PRAGMA_RE = re.compile(r"^(noqa\b|type:\s*ignore|pragma\b|pylint:|fmt:|isort:|mypy:|nosec\b|ruff:)", re.IGNORECASE)
 SKIP_DIRS = {"var", ".venv", "venv", "__pycache__", ".bob", ".git", ".amend", "node_modules"}
+SKIP_PREFIXES = ("compliance/drafts/", "evidence/")  # Amend's own generated artifacts
 BATCH = 60
 
 SYSTEM = (
@@ -53,6 +54,8 @@ def collect(app_dir: Path) -> tuple[list[TextItem], int]:
         if not path.is_file() or any(part in SKIP_DIRS for part in path.relative_to(app_dir).parts):
             continue
         rel = path.relative_to(app_dir).as_posix()
+        if rel.startswith(SKIP_PREFIXES):
+            continue
         if path.suffix == ".py":
             src = path.read_text(encoding="utf-8", errors="replace")
             try:
