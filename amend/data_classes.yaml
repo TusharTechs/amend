@@ -1,0 +1,21 @@
+# Data-class definitions for the Amend code graph.
+# Each class maps to a list of column-name patterns (case-insensitive substring match).
+# These propagate through SQL view aliases traced by sqlglot lineage.
+
+data_classes:
+  government_id:
+    patterns:
+      - ssn
+      - tin
+      - social_security
+      - tax_id
+  financial_account:
+    patterns:
+      - bank_account_number
+      - account_number
+      - routing
+  income:
+    patterns:
+      - income
+      - salary
+      - wages

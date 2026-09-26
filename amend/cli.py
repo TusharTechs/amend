@@ -4,6 +4,9 @@ amend CLI entry point.
 Usage:
   amend diff --from 2021-01-01 --to 2026-09-01 [--substantive] [--json FILE]
   amend validate PATH [--from DATE --to DATE]
+  amend graph [--repo REPO] [--out FILE]
+  amend canary [--repo REPO] [--json FILE]
+  amend guard [--repo REPO] [--json FILE]
 """
 from __future__ import annotations
 
@@ -140,8 +143,47 @@ def main() -> None:
     val_p.add_argument("--to", dest="to_date", default=None, metavar="DATE")
     val_p.set_defaults(func=cmd_validate)
 
+    # graph subcommand
+    graph_p = subparsers.add_parser("graph", help="Build code graph for a target repo")
+    graph_p.add_argument("--repo", default="demo/lendwise", metavar="REPO",
+                         help="Path to target repo (default: demo/lendwise)")
+    graph_p.add_argument("--out", default=None, metavar="FILE",
+                         help="Write graph JSON to FILE (e.g. .amend/graph.json)")
+    graph_p.set_defaults(func=_cmd_graph)
+
+    # canary subcommand
+    canary_p = subparsers.add_parser("canary", help="Run dynamic canary sweep")
+    canary_p.add_argument("--repo", default="demo/lendwise", metavar="REPO",
+                          help="Path to target repo (default: demo/lendwise)")
+    canary_p.add_argument("--json", default=None, metavar="FILE",
+                          help="Write hits to JSON file")
+    canary_p.set_defaults(func=_cmd_canary)
+
+    # guard subcommand
+    guard_p = subparsers.add_parser("guard", help="Run zero-LLM compliance gate")
+    guard_p.add_argument("--repo", default="demo/lendwise", metavar="REPO",
+                         help="Path to target repo (default: demo/lendwise)")
+    guard_p.add_argument("--json", default=None, metavar="FILE",
+                         help="Write failures to JSON file")
+    guard_p.set_defaults(func=_cmd_guard)
+
     args = parser.parse_args()
     args.func(args)
+
+
+def _cmd_graph(args: argparse.Namespace) -> None:
+    from amend.graph import cmd_graph
+    cmd_graph(args)
+
+
+def _cmd_canary(args: argparse.Namespace) -> None:
+    from amend.canary import cmd_canary
+    cmd_canary(args)
+
+
+def _cmd_guard(args: argparse.Namespace) -> None:
+    from amend.guard import cmd_guard
+    cmd_guard(args)
 
 
 if __name__ == "__main__":

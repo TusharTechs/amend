@@ -23,6 +23,7 @@ dev = [
     "sqlalchemy",
     "httpx",
     "pytest",
+    "PyJWT",
 ]
 
 [tool.setuptools.packages.find]

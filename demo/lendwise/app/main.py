@@ -53,7 +53,7 @@ api.include_router(applications_router)
 api.include_router(servicing_router)
 app.include_router(api)
 
-# ── Mobile token endpoint (no MFA dependency on the router) ───────────────────
+# ── Mobile endpoints ──────────────────────────────────────────────────────────
 mobile_router = APIRouter(prefix="/api/v1")
 
 
@@ -64,7 +64,7 @@ def mobile_profile(user: dict = Depends(get_current_user)):
 
 app.include_router(mobile_router)
 
-# ── Legacy support sub-app (separate mount, no require_mfa) ──────────────────
+# ── Legacy support console ────────────────────────────────────────────────────
 support_app = FastAPI(title="Lendwise Internal Support")
 support_app.include_router(legacy_router)
 
