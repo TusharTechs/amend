@@ -113,7 +113,7 @@ def cmd_draft(args) -> None:
         for rej in r["rejected"]:
             print(f"      rejected {rej['obligation'].id}: {rej['problems'][0].split(': ', 1)[-1]}")
     try:
-        shown = out.relative_to(Path.cwd())
+        shown = out.relative_to(Path.cwd()).as_posix()
     except ValueError:
         shown = out
     print(f"\nDrafts: {n} proposed, {total_rej} rejected -> {shown}")

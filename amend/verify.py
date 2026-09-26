@@ -153,7 +153,7 @@ def verify(repo_root: str | Path, app_dir: str | Path, base_ref: str = "HEAD~1")
     head_asserts: dict[str, int] = {}
     head_skipxfail: dict[str, int] = {}
     for p in head_test_files:
-        rel = str(p.relative_to(app_dir))
+        rel = p.relative_to(app_dir).as_posix()
         head_hashes[rel] = _sha256(p)
         src = p.read_text(encoding="utf-8")
         head_asserts[rel] = _count_asserts(src)
@@ -176,7 +176,7 @@ def verify(repo_root: str | Path, app_dir: str | Path, base_ref: str = "HEAD~1")
         # Snapshot base test files
         base_test_files = _list_test_files(base_app_dir)
         for p in base_test_files:
-            rel = str(p.relative_to(base_app_dir))
+            rel = p.relative_to(base_app_dir).as_posix()
             base_test_hashes[rel] = _sha256(p)
             src = p.read_text(encoding="utf-8")
             base_asserts[rel] = _count_asserts(src)
