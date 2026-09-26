@@ -33,6 +33,7 @@ def run(db_url: str = "sqlite:///./var/lendwise.db") -> int:
 
     db.commit()
     db.close()
+    engine.dispose()
     return len(affected)
 
 

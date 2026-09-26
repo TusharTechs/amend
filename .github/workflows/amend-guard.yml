@@ -47,4 +47,14 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
-      - run: pytest -q
+      - run: pytest -q -rf --junitxml=pytest-report.xml
+      - name: Report failing tests as annotations
+        if: failure()
+        shell: python
+        run: |
+          import xml.etree.ElementTree as ET
+          root = ET.parse("pytest-report.xml").getroot()
+          for case in root.iter("testcase"):
+              for bad in case.findall("failure") + case.findall("error"):
+                  text = (bad.get("message") or bad.text or "").replace("\r", " ").replace("\n", " ")
+                  print(f"::error title={case.get('classname')}.{case.get('name')}::{text[:900]}")
