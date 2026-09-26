@@ -279,3 +279,15 @@ def test_status_counts_present(evidence_repo):
     assert isinstance(cert["status_counts"], dict)
     total = sum(cert["status_counts"].values())
     assert total == 2  # one code + one process obligation
+
+
+def test_scrub_removes_absolute_repo_and_home_paths(tmp_path):
+    from pathlib import Path
+    from amend.evidence import _scrub
+
+    home = str(Path.home())
+    data = {"path": f"{tmp_path}/demo/lendwise/var/x.db", "out": [f"{home}/.venv/lib/site.py:1"]}
+    clean = _scrub(data, tmp_path)
+    assert clean["path"] == "demo/lendwise/var/x.db"
+    assert clean["out"][0].startswith("~/")
+    assert str(tmp_path) not in str(clean) and home not in str(clean)
