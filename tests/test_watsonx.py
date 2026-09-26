@@ -121,3 +121,19 @@ def test_parse_json_repairs_missing_closers():
     assert parse_json("[]\n```", list_key="obligations") == {"obligations": []}
     with pytest.raises(WatsonxError):
         parse_json("no json here")
+
+
+def test_rate_limit_is_retried(tmp_path):
+    calls = {"chat": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.host == "iam.cloud.ibm.com":
+            return httpx.Response(200, json={"access_token": "tok", "expires_in": 3600})
+        calls["chat"] += 1
+        if calls["chat"] == 1:
+            return httpx.Response(429, json={"errors": [{"message": "concurrent request limit"}]})
+        return httpx.Response(200, json={"choices": [{"message": {"content": '{"ok": 1}'}}], "usage": {}})
+
+    client = WatsonxClient(WatsonxConfig("k", "p"), None, httpx.MockTransport(handler))
+    client.backoff = 0
+    assert client.chat_json("s", "u") == {"ok": 1} and calls["chat"] == 2
