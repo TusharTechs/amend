@@ -10,12 +10,12 @@ build_evidence(repo_root, app_dir, base_ref, run_id=None) -> dict
 from __future__ import annotations
 
 import hashlib
-import html
 import json
 import re
 import subprocess
 import uuid
 from datetime import datetime, timezone
+from html import escape as _escape
 from pathlib import Path
 from typing import Any
 
@@ -210,7 +210,7 @@ def _clean_snippet(snippet: str, limit: int = 80) -> str:
     """Printable, HTML-escaped snippet. Binary stores such as sqlite pages would
     otherwise render as replacement glyphs, and raw '<' or '&' would break the page."""
     runs = re.findall(r"[\x20-\x7e]{4,}", snippet)
-    return html.escape(" · ".join(r.strip() for r in runs)[:limit])
+    return _escape(" · ".join(r.strip() for r in runs)[:limit])
 
 
 def _build_html(cert: dict) -> str:
@@ -266,7 +266,7 @@ def _build_html(cert: dict) -> str:
         table_rows += (
             f'<tr>'
             f'<td><code>{r["citation"]}</code></td>'
-            f'<td style="font-style:italic;max-width:20em;font-size:0.85em">{r["quote"][:120]}</td>'
+            f'<td style="font-style:italic;max-width:20em;font-size:0.85em">{_escape(r["quote"])}</td>'
             f'<td>{r["obligation_id"]}</td>'
             f'<td style="font-size:0.85em">{_sites(r["impact_sites"])}</td>'
             f'<td style="font-size:0.85em">{_tests(r["obligation_tests"])}</td>'
