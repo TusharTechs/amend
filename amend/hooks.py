@@ -42,38 +42,50 @@ _LOCKED_PATH_RES = [
 ]
 
 
-def _is_locked_test(path: str, repo_root: Path, base_ref: str) -> bool:
+def _workspace_rel(path: str, cwd: str) -> str | None:
+    """*path* relative to the workspace (Bob sends workspace-relative paths)."""
+    p = Path(path.replace("\\", "/"))
+    if p.is_absolute():
+        try:
+            p = p.resolve().relative_to(Path(cwd).resolve())
+        except ValueError:
+            return None
+    return p.as_posix().removeprefix("./")
+
+
+def _is_locked_test(path: str, repo_root: Path, base_ref: str, cwd: str = ".") -> bool:
     """Return True if *path* resolves to a test file that exists at *base_ref*."""
     import subprocess
 
     if not path:
         return False
-    # Normalise to relative path from repo root
-    try:
-        rel = str(Path(path).resolve().relative_to(repo_root))
-    except ValueError:
-        rel = path
+    rel = _workspace_rel(path, cwd)
 
-    # Must be under tests/
-    if not rel.startswith("tests/"):
+    # Must be under the workspace's tests/
+    if rel is None or not rel.startswith("tests/"):
         return False
+
+    # git needs the path relative to the repo root, e.g. demo/lendwise/tests/...
+    try:
+        git_path = (Path(cwd).resolve() / rel).relative_to(repo_root.resolve()).as_posix()
+    except ValueError:
+        git_path = rel
 
     # Check if the file exists at base_ref in git
     result = subprocess.run(
-        ["git", "cat-file", "-e", f"{base_ref}:{rel}"],
+        ["git", "cat-file", "-e", f"{base_ref}:{git_path}"],
         cwd=str(repo_root),
         capture_output=True,
     )
     return result.returncode == 0
 
 
-def _is_locked_path(path: str) -> bool:
+def _is_locked_path(path: str, cwd: str = ".") -> bool:
     """Return True if path matches a locked directory."""
     if not path:
         return False
-    # Normalise to forward slashes, strip leading ./
-    norm = path.replace("\\", "/").lstrip("./")
-    return any(pat.match(norm) for pat in _LOCKED_PATH_RES)
+    norm = _workspace_rel(path, cwd)
+    return norm is not None and any(pat.match(norm) for pat in _LOCKED_PATH_RES)
 
 
 def _find_repo_root(cwd: str) -> Path:
@@ -129,10 +141,11 @@ def _append_event(repo_root: Path, event: str, summary: str) -> None:
 def _pre_tool_use(payload: dict) -> None:
     cwd = payload.get("cwd", ".")
     repo_root = _find_repo_root(cwd)
-    base_ref = _load_base_ref(repo_root)
+    base_ref = _load_base_ref(Path(cwd))
 
-    tool_name = payload.get("tool_name", "")
-    tool_input = payload.get("tool_input", {})
+    # Bob sends the tool arguments under "input"
+    tool_name = payload.get("tool_name") or payload.get("tool", "")
+    tool_input = payload.get("input") or payload.get("tool_input") or {}
 
     # 1. Check shell commands
     if tool_name in ("execute_command", "run_command"):
@@ -150,14 +163,14 @@ def _pre_tool_use(payload: dict) -> None:
         path = tool_input.get("path", "")
 
         # Check locked directories
-        if _is_locked_path(path):
+        if _is_locked_path(path, cwd):
             sys.stderr.write(
                 f"amend-hooks: edits to {path!r} are locked (evidence/, benchmark/, .bob/)\n"
             )
             sys.exit(2)
 
         # Check locked test files (exist at base_ref under tests/)
-        if _is_locked_test(path, repo_root, base_ref):
+        if _is_locked_test(path, repo_root, base_ref, cwd):
             sys.stderr.write(
                 f"amend-hooks: {path!r} is a locked test file (exists at {base_ref})\n"
             )
@@ -174,8 +187,8 @@ def _post_tool_use(payload: dict) -> None:
     cwd = payload.get("cwd", ".")
     repo_root = _find_repo_root(cwd)
 
-    tool_name = payload.get("tool_name", "")
-    tool_input = payload.get("tool_input", {})
+    tool_name = payload.get("tool_name") or payload.get("tool", "")
+    tool_input = payload.get("input") or payload.get("tool_input") or {}
 
     _append_event(repo_root, "post-tool-use", f"tool={tool_name}")
 
