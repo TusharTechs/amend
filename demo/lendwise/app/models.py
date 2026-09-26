@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Float, Integer, String, Text
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -53,3 +53,25 @@ class Incident(Base):
     discovered_at = Column(DateTime, default=datetime.utcnow)
     records_affected = Column(Integer, nullable=False)
     description = Column(Text, nullable=True)
+
+
+class FtcNotice(Base):
+    """Notice to the FTC for a notification event, 16 CFR 314.4(j)(1).
+
+    One row per incident that involves at least 500 consumers. The columns
+    hold the items listed in (j)(1)(i)-(vi); due_by is 30 days after discovery.
+    """
+
+    __tablename__ = "ftc_notices"
+
+    id = Column(Integer, primary_key=True, index=True)
+    incident_id = Column(Integer, ForeignKey("incidents.id"), nullable=False, index=True)
+    due_by = Column(DateTime, nullable=False)
+    institution_contact = Column(Text, nullable=False)           # (j)(1)(i)
+    information_types = Column(Text, nullable=False)             # (j)(1)(ii)
+    event_date_range = Column(Text, nullable=True)               # (j)(1)(iii)
+    consumers_affected = Column(Integer, nullable=False)         # (j)(1)(iv)
+    event_description = Column(Text, nullable=False)             # (j)(1)(v)
+    law_enforcement_delay = Column(Boolean, default=False)       # (j)(1)(vi)
+    status = Column(String, default="pending", nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)

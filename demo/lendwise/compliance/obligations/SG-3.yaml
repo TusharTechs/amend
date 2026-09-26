@@ -1,0 +1,13 @@
+id: SG-3
+citation: 314.4(c)(3)
+version: '2026-09-01'
+change: added
+quote: Protect by encryption all customer information held or transmitted by you both
+  in transit over external networks and at rest
+statement: 'Customer information such as SSNs and bank account numbers must not sit
+  in plaintext anywhere Lendwise writes it: request logs, analytics exports, buckets
+  or the application database.'
+shape: code
+status: approved
+exceptions: []
+approved_by: compliance-lead

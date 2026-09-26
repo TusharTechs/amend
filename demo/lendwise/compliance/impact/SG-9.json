@@ -1,0 +1,10 @@
+[
+  {
+    "obligation_id": "SG-9",
+    "file": "app/incidents.py",
+    "line": 13,
+    "kind": "missing_behavior",
+    "source": "inferred",
+    "rationale": "record_incident stores the incident but creates no FTC notice for events affecting 500 or more consumers"
+  }
+]

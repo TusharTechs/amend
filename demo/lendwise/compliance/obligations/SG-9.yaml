@@ -1,0 +1,13 @@
+id: SG-9
+citation: 314.4(j)(1)
+version: '2026-09-01'
+change: added
+quote: you must notify the Federal Trade Commission as soon as possible, and no later
+  than 30 days after discovery of the event
+statement: When an incident affects 500 or more consumers, Lendwise opens an FTC notice
+  due no later than 30 days after discovery, carrying the six items the clause lists
+  in (j)(1)(i)-(vi).
+shape: code
+status: approved
+exceptions: []
+approved_by: compliance-lead

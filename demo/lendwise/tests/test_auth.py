@@ -38,7 +38,7 @@ def test_customer_login_missing_otp(client):
 def test_staff_login_success(client):
     resp = client.post(
         "/auth/staff/login",
-        json={"email": "ops@lendwise.com", "password": "staffpass"},
+        json={"email": "ops@lendwise.com", "password": "staffpass", "otp": "123456"},
     )
     assert resp.status_code == 200
     assert "access_token" in resp.json()
@@ -47,7 +47,7 @@ def test_staff_login_success(client):
 def test_mobile_token_success(client):
     resp = client.post(
         "/auth/mobile/token",
-        json={"email": "alice@example.com", "password": "pass1234"},
+        json={"email": "alice@example.com", "password": "pass1234", "otp": "123456"},
     )
     assert resp.status_code == 200
     assert "access_token" in resp.json()

@@ -1,0 +1,12 @@
+id: SG-7
+citation: 314.4(c)(7)
+version: '2026-09-01'
+change: added
+quote: Adopt procedures for change management
+statement: Changes to systems that handle customer information follow a documented
+  change-management procedure. This is a process obligation; Amend routes it to the
+  GRC owner instead of changing code.
+shape: process
+status: approved
+exceptions: []
+approved_by: compliance-lead

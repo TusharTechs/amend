@@ -1,0 +1,16 @@
+# Pre-existing tests rewritten by a named human because they asserted
+# behaviour an approved obligation now prohibits. Agents are blocked from
+# editing these files (PreToolUse hook); Amend lists every entry on the
+# evidence certificate.
+- file: tests/test_auth.py
+  obligation: SG-5
+  reason: test_staff_login_success and test_mobile_token_success expected a session without a second factor (314.4(c)(5)); they now send the one-time code
+  approved_by: compliance-lead
+- file: tests/test_export.py
+  obligation: SG-3
+  reason: test_export_csv_contents asserted that the analytics export carries the plaintext SSN as "tin" (314.4(c)(3)); it now asserts the SSN is absent
+  approved_by: compliance-lead
+- file: tests/test_servicing.py
+  obligation: SG-5
+  reason: test_legacy_impersonate_with_valid_key reached a full customer profile with the staff API key alone (314.4(c)(5)); it now also presents an MFA session
+  approved_by: compliance-lead

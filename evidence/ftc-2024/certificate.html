@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amend Evidence Certificate — ftc-2024</title>
+<style>
+  :root {
+    --bg: #ffffff; --surface: #f7f8fa; --border: #e5e7eb;
+    --text: #1f2328; --muted: #57606a; --accent: #3b82d4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117; --surface: #161b22; --border: #30363d;
+      --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    }
+  }
+  @media print { body { background: white; color: black; } }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system,"Segoe UI",system-ui,sans-serif;
+    font-size: 14px; line-height: 1.6; padding: 2rem;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin-bottom: 0.25rem; }
+  h2 { font-size: 1rem; margin: 1.5rem 0 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; }
+  .strip { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; }
+  .meta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; margin: 1rem 0; }
+  .meta-item { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.5rem; }
+  .meta-item .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .meta-item .value { font-family: monospace; font-size: 0.85rem; word-break: break-all; }
+  table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.88rem; }
+  th { background: var(--surface); border: 1px solid var(--border); padding: 0.4rem 0.5rem; text-align: left; font-weight: 600; }
+  td { border: 1px solid var(--border); padding: 0.4rem 0.5rem; vertical-align: top; }
+  code { background: var(--surface); padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.85em; }
+  .disclaimer {
+    margin-top: 1.5rem; padding: 0.75rem 1rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 0.85rem; color: var(--muted);
+  }
+  footer {
+    margin-top: 2rem; padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    text-align: center; font-size: 0.75rem; color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Amend Evidence Certificate</h1>
+  <div class="meta-grid">
+    <div class="meta-item"><div class="label">Run ID</div><div class="value">ftc-2024</div></div>
+    <div class="meta-item"><div class="label">Generated</div><div class="value">2026-09-26T19:17:00.225691+00:00</div></div>
+    <div class="meta-item"><div class="label">Base SHA</div><div class="value">701aa8a6194ed2ff7db961f3dbf35284c58526e7</div></div>
+    <div class="meta-item"><div class="label">Head SHA</div><div class="value">e9844c37eb0ae2eba965a65336e471c6a60b5dce</div></div>
+    <div class="meta-item"><div class="label">Base Ref</div><div class="value">main</div></div>
+  </div>
+
+  <h2>Status Summary</h2>
+  <div class="strip"><span style="margin-right:1.5em;color:#1d4ed8;"><strong>Partially verified</strong>: 1</span><span style="margin-right:1.5em;color:#15803d;"><strong>Verified</strong>: 2</span><span style="margin-right:1.5em;color:#b45309;"><strong>Human review required</strong>: 1</span></div>
+
+  <h2>Obligation Matrix</h2>
+  <table>
+    <tr>
+      <th>Clause</th><th>Quote</th><th>Obligation</th>
+      <th>Code Sites</th><th>Tests (base/head)</th><th>Status</th>
+    </tr>
+    <tr><td><code>314.4(c)(3)</code></td><td style="font-style:italic;max-width:20em;font-size:0.85em">Protect by encryption all customer information held or transmitted by you both in transit over external networks and at rest</td><td>SG-3</td><td style="font-size:0.85em"><code>app/logging_mw.py:14</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>jobs/export_underwriting.py:27</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>sql/views.sql:1</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>app/models.py:24</code> <em style="font-size:0.85em;color:#6b7280">inferred</em></td><td style="font-size:0.85em"><span title="test_sg3_request_logs_exclude_customer_data.py">base:✗ head:✓ [D]</span><br><span title="test_sg3_underwriting_export_excludes_ssn.py">base:✗ head:✓ [D]</span></td><td style="color:#1d4ed8;font-weight:600">Partially verified</td></tr>
+<tr><td><code>314.4(c)(5)</code></td><td style="font-style:italic;max-width:20em;font-size:0.85em">Implement multi-factor authentication for any individual accessing any information system</td><td>SG-5</td><td style="font-size:0.85em"><code>app/support_legacy.py:12</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>app/main.py:61</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>app/auth_routes.py:54</code> <em style="font-size:0.85em;color:#6b7280">graph</em><br><code>app/auth_routes.py:63</code> <em style="font-size:0.85em;color:#6b7280">graph</em></td><td style="font-size:0.85em"><span title="test_sg5_mobile_path_requires_second_factor.py">base:✗ head:✓ [D]</span><br><span title="test_sg5_staff_login_requires_second_factor.py">base:✗ head:✓ [D]</span><br><span title="test_sg5_support_console_requires_mfa.py">base:✗ head:✓ [D]</span></td><td style="color:#15803d;font-weight:600">Verified</td></tr>
+<tr><td><code>314.4(c)(7)</code></td><td style="font-style:italic;max-width:20em;font-size:0.85em">Adopt procedures for change management</td><td>SG-7</td><td style="font-size:0.85em">—</td><td style="font-size:0.85em">—</td><td style="color:#b45309;font-weight:600">Human review required</td></tr>
+<tr><td><code>314.4(j)(1)</code></td><td style="font-style:italic;max-width:20em;font-size:0.85em">you must notify the Federal Trade Commission as soon as possible, and no later than 30 days after discovery of the event</td><td>SG-9</td><td style="font-size:0.85em"><code>app/incidents.py:13</code> <em style="font-size:0.85em;color:#6b7280">inferred</em></td><td style="font-size:0.85em"><span title="test_sg9_ftc_notice_for_notification_events.py">base:✗ head:✓ [D]</span></td><td style="color:#15803d;font-weight:600">Verified</td></tr>
+
+  </table>
+
+  <h2>Guard Findings</h2>
+  <em>None</em>
+
+  <h2>Canary Hits — Before</h2>
+  <table style="width:100%;font-size:0.85em"><tr><th>Store</th><th>Path</th><th>Offset</th><th>Snippet</th></tr><tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>147924</td><td><code>Y000-**-****000000417 · pending2</code></td></tr>
+<tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>147993</td><td><code>.012655B · Y000-**-****000000417 · pending2</code></td></tr>
+<tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>147935</td><td><code>Y000-00-0417000*** · pending2026-09-26</code></td></tr>
+<tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>148004</td><td><code>Y000-00-0417000*** · pending2026-09-26</code></td></tr>
+<tr><td>log</td><td><code>var/log/app.log</code></td><td>2</td><td><code>2026-09-27 00:47:00,008 DEBUG lendwise.http incoming request method=POST path=/a</code></td></tr>
+<tr><td>log</td><td><code>var/log/app.log</code></td><td>2</td><td><code>2026-09-27 00:47:00,008 DEBUG lendwise.http incoming request method=POST path=/a</code></td></tr>
+<tr><td>bucket</td><td><code>var/buckets/analytics/uw_export_2026-09-27.csv</code></td><td>369</td><td><code>368,41700.0,pending,000-**-****</code></td></tr>
+<tr><td>bucket</td><td><code>var/buckets/analytics/uw_export_2026-09-27.csv</code></td><td>370</td><td><code>369,41700.0,pending,000-**-****</code></td></tr>
+</table>
+
+  <h2>Canary Hits — After</h2>
+  <table style="width:100%;font-size:0.85em"><tr><th>Store</th><th>Path</th><th>Offset</th><th>Snippet</th></tr><tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>160212</td><td><code>Y000-**-****000000417 · pending2</code></td></tr>
+<tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>160281</td><td><code>.964602B · Y000-**-****000000417 · pending2</code></td></tr>
+<tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>160223</td><td><code>Y000-00-0417000*** · pending2026-09-26</code></td></tr>
+<tr><td>sqlite</td><td><code>var/lendwise.db</code></td><td>160292</td><td><code>Y000-00-0417000*** · pending2026-09-26</code></td></tr>
+</table>
+
+  <h2>Test Integrity</h2>
+  <p><em style="color:#15803d">No unapproved changes to pre-existing tests.</em></p><p style="margin-top:0.5rem">Pre-existing tests rewritten by a named human because they asserted behaviour the obligation prohibits (agents are blocked from editing them):</p><table><tr><th>Test file</th><th>Reason</th><th>Approved by</th></tr><tr><td><code>tests/test_auth.py</code></td><td>test_staff_login_success and test_mobile_token_success expected a session without a second factor (314.4(c)(5)); they now send the one-time code</td><td>compliance-lead</td></tr>
+<tr><td><code>tests/test_export.py</code></td><td>test_export_csv_contents asserted that the analytics export carries the plaintext SSN as "tin" (314.4(c)(3)); it now asserts the SSN is absent</td><td>compliance-lead</td></tr>
+<tr><td><code>tests/test_servicing.py</code></td><td>test_legacy_impersonate_with_valid_key reached a full customer profile with the staff API key alone (314.4(c)(5)); it now also presents an MFA session</td><td>compliance-lead</td></tr>
+</table>
+
+  <h2>Artifact Hashes (SHA-256)</h2>
+  <table>
+    <tr><th>File</th><th>SHA-256</th></tr>
+    <tr><td><code>matrix.json</code></td><td style="font-family:monospace;font-size:0.8em">9062138b6a834480e11ad5a941e1d613e770745b1ad440df9b487678a7d59a8e</td></tr>
+<tr><td><code>certificate.json</code></td><td style="font-family:monospace;font-size:0.8em">dcbe7ba43fac54a6205036b8b8865104fa58f181ee2dba6b91e0b8d5f53ec090</td></tr>
+<tr><td><code>certificate.md</code></td><td style="font-family:monospace;font-size:0.8em">ce07b05b18881d9bc3292ad728c3926d34f7ed3e4f37447e0fd304023cb9d800</td></tr>
+
+  </table>
+
+  <div class="disclaimer">
+    <p><strong>Impact discovery recall on the Amend benchmark:</strong>
+    see <code>benchmark/results</code>; unknown paths may exist.</p>
+    <p style="margin-top:0.5rem">This report states what automated checks verified.
+    It is not a legal opinion and does not assert compliance.</p>
+  </div>
+</div>
+<footer>Made with IBM Bob</footer>
+</body>
+</html>
