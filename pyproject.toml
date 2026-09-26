@@ -11,7 +11,7 @@ dependencies = [
     "pyyaml",
     "sqlglot",
     "networkx",
-    "mcp[cli]",
+    "mcp[cli]>=2.0",
 ]
 
 [project.scripts]
