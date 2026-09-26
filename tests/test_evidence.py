@@ -301,3 +301,17 @@ def test_certificate_snippets_are_printable_and_escaped():
     assert "\ufffd" not in out and "\x00" not in out
     assert "&lt;b&gt;&amp;x" in out
     assert "000-**-****" in out
+
+
+def test_certificate_shows_full_verbatim_quote(evidence_repo):
+    """The certificate must never cut a verbatim quote short."""
+    import html as _html
+
+    root, app = evidence_repo
+    build_evidence(root, app, base_ref="HEAD", run_id="test-run-quote")
+    ev_dir = root / "evidence" / "test-run-quote"
+    cert = json.loads((ev_dir / "certificate.json").read_text())
+    page = (ev_dir / "certificate.html").read_text()
+    assert cert["obligations"]
+    for ob in cert["obligations"]:
+        assert _html.escape(ob["quote"]) in page
