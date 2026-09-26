@@ -152,6 +152,58 @@ def _test_matches_ob(test_file: str, ob_id: str) -> bool:
 # HTML certificate
 # ---------------------------------------------------------------------------
 
+def _rel_to(path: str, root: Path) -> str:
+    try:
+        return str(Path(path).resolve().relative_to(Path(root).resolve()))
+    except (ValueError, OSError):
+        return path
+
+
+def _scrub(obj: Any, repo_root: Path) -> Any:
+    """Replace absolute repo and home-directory paths in every string."""
+    roots = sorted({str(Path(repo_root).resolve()), str(repo_root)}, key=len, reverse=True)
+    home = str(Path.home())
+
+    def fix(s: str) -> str:
+        for r in roots:
+            s = s.replace(r + "/", "").replace(r, ".")
+        return s.replace(home, "~")
+
+    if isinstance(obj, str):
+        return fix(obj)
+    if isinstance(obj, list):
+        return [_scrub(v, repo_root) for v in obj]
+    if isinstance(obj, dict):
+        return {k: _scrub(v, repo_root) for k, v in obj.items()}
+    return obj
+
+
+def _canary_at_ref(repo_root: Path, app_dir: Path, base_ref: str) -> list[dict]:
+    """Run the canary sweep against *base_ref* in a temporary git worktree."""
+    import shutil
+    import subprocess
+    import tempfile
+
+    tmp = tempfile.mkdtemp(prefix="amend_canary_base_")
+    try:
+        added = subprocess.run(
+            ["git", "worktree", "add", "--detach", tmp, base_ref],
+            cwd=str(repo_root), capture_output=True, text=True,
+        )
+        if added.returncode != 0:
+            return []
+        base_app = Path(tmp) / Path(app_dir).resolve().relative_to(Path(repo_root).resolve())
+        hits = run_canary(base_app) or []
+        for h in hits:
+            h["path"] = _rel_to(h.get("path", ""), base_app)
+        return hits
+    except Exception:
+        return []
+    finally:
+        subprocess.run(["git", "worktree", "remove", "--force", tmp], cwd=str(repo_root), capture_output=True)
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def _build_html(cert: dict) -> str:
     meta = cert["meta"]
     rows = cert["obligations"]
@@ -462,8 +514,12 @@ def build_evidence(
     except Exception:
         pass
 
-    # Before canary: try to get from verification if stored, else empty
-    canary_hits_before: list[dict] = verification.get("canary_before", [])
+    # Before canary: the same sweep against the base commit, in a throwaway worktree
+    canary_hits_before: list[dict] = (
+        verification.get("canary_before") or _canary_at_ref(repo_root, app_dir, base_ref)
+    )
+    for h in canary_hits_after:
+        h["path"] = _rel_to(h.get("path", ""), app_dir)
 
     # ── Git SHAs and diff ─────────────────────────────────────────────────────
     base_sha, head_sha = _git_shas(repo_root, base_ref)
@@ -496,6 +552,9 @@ def build_evidence(
         }
         matrix_rows.append(row)
 
+    # Evidence is shared with auditors: no absolute paths or home directories.
+    matrix_rows = _scrub(matrix_rows, repo_root)
+
     # ── Write matrix.json ─────────────────────────────────────────────────────
     matrix_path = evidence_dir / "matrix.json"
     matrix_path.write_text(json.dumps(matrix_rows, indent=2), encoding="utf-8")
@@ -527,6 +586,7 @@ def build_evidence(
             "It is not a legal opinion and does not assert compliance."
         ),
     }
+    cert = _scrub(cert, repo_root)
 
     # ── Write certificate.json ────────────────────────────────────────────────
     cert_json_path = evidence_dir / "certificate.json"
