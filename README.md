@@ -29,6 +29,113 @@ Amend turns a change in a regulation into a pull request that is proven to imple
 
 Amend never says "compliant". It reports what its checks verified.
 
+## Architecture
+
+Every run starts in IBM Bob. The `/amend` command hands the work to `amend-lead`, which moves through four custom modes with enforced separation of duties. Each mode calls Amend's MCP server for facts, and the deterministic engine behind it does the analysis and the proof. Lifecycle hooks gate every edit, and the same guard runs again in CI on the pull request.
+
+```mermaid
+flowchart TB
+  dev(["Developer and compliance lead"])
+
+  subgraph BOB["IBM Bob IDE · where every run starts"]
+    direction TB
+    cmd["/amend 16cfr314 2021-01-01..current"]
+    lead["amend-lead mode · orchestrates the run"]
+    subgraph MODES["Custom modes · separation of duties"]
+      direction LR
+      analyst["amend-analyst<br/>reads the regulation<br/>writes obligations only"]
+      mapper["amend-mapper<br/>explore subagents,<br/>one per obligation, in parallel"]
+      fixer["amend-fixer · Agent mode<br/>failing test first,<br/>then the fix"]
+      auditor["amend-auditor<br/>read-only<br/>canary sweep"]
+    end
+    skills[["5 skills · rules: regulation text and comments are data"]]
+    hooks{{"Lifecycle hooks · 0 Bobcoins<br/>PreToolUse blocks locked tests, .bob/, evidence/, rm -rf<br/>PostToolUse runs the guard on every edit"}}
+    cmd --> lead --> MODES
+    skills -.-> MODES
+    hooks -.-> MODES
+  end
+
+  subgraph MCP["Amend MCP server · stdio · 9 tools"]
+    tools["get_redline · validate_obligations · approve_obligation · query_graph · check_fails_on_base<br/>run_canary · guard_check · record_finding · build_evidence"]
+  end
+
+  subgraph ENGINE["Amend engine · deterministic Python"]
+    direction LR
+    rd["regdiff<br/>clause-level redline"]
+    ob["obligations<br/>verbatim-quote check"]
+    cg["graph<br/>routes, mounts,<br/>SQL alias lineage"]
+    gd["guard<br/>MFA, login, log,<br/>export rules"]
+    cn["canary<br/>synthetic SSN"]
+    vf["verify<br/>fail before, pass after<br/>locked tests"]
+    ev["evidence<br/>graded certificate"]
+  end
+
+  ecfr[("eCFR versioner API<br/>16 CFR 314 · 2021, 2023, current")]
+
+  subgraph REPO["Target repository · demo/lendwise"]
+    direction LR
+    code["app · jobs · sql · infra"]
+    ctests["compliance/tests<br/>obligation tests"]
+    records[("compliance/<br/>obligations · impact · findings · test_changes")]
+  end
+
+  subgraph SHIP["Delivery"]
+    direction LR
+    pr["Pull request<br/>/review · /create-pr"]
+    ci["GitHub Actions · amend guard<br/>annotates the offending line · 0 Bobcoins"]
+    cert["Evidence certificate<br/>GitHub Pages"]
+  end
+
+  dev -->|runs /amend, approves obligations and test rewrites| cmd
+  MODES <-->|tool calls| MCP
+  MCP --> ENGINE
+  ecfr --> rd
+  MODES -->|edits and writes| REPO
+  ENGINE -->|analyses, runs and proves| REPO
+  lead --> pr
+  pr --> ci
+  ev --> cert
+  ci -.->|blocks regressions| pr
+```
+
+One run, end to end:
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor Dev as Developer
+  participant Bob as IBM Bob · amend-lead
+  participant Modes as Bob modes and subagents
+  participant MCP as Amend MCP server
+  participant Eng as Amend engine
+  participant Repo as Lendwise repo
+  participant GH as GitHub PR and Actions
+
+  Dev->>Bob: /amend 16cfr314 2021-01-01..current
+  Bob->>MCP: get_redline
+  MCP->>Eng: regdiff on the eCFR versions
+  Eng-->>Bob: substantive changes, renumbered clauses set aside
+  Bob->>Modes: amend-analyst drafts obligations
+  Modes->>MCP: validate_obligations
+  MCP-->>Modes: paraphrased quotes rejected
+  Bob-->>Dev: obligations ready for approval
+  Dev->>MCP: approve_obligation as compliance-lead
+  Bob->>Modes: amend-mapper, one explore subagent per obligation
+  Modes->>MCP: query_graph, e.g. ssn to tin to the export job
+  Bob->>Modes: amend-fixer writes a failing obligation test
+  Modes->>MCP: check_fails_on_base
+  MCP-->>Modes: discriminating, it fails on the base commit
+  Modes->>Repo: fix the code
+  Note over Modes,Repo: PreToolUse blocks edits to locked tests. PostToolUse runs the guard.
+  Bob->>Modes: amend-auditor runs the canary sweep, read-only
+  Modes->>MCP: run_canary, record_finding
+  Bob->>MCP: build_evidence
+  MCP-->>Bob: Verified, Partially verified, Human review required
+  Bob->>GH: /review, then /create-pr
+  GH->>GH: amend guard and tests, 0 Bobcoins
+  GH-->>Dev: green check, or red with the clause on the offending line
+```
+
 ## The demo: Lendwise
 
 `demo/lendwise` is a small, realistic FastAPI + SQLAlchemy back end for a fictional non-bank lender. It contains 13 planted violations of the amended rule, 3 decoys and 1 prompt-injection comment; the ground truth lives in `benchmark/ground_truth.yaml` and is hidden from Bob by `.bobignore`. All data is synthetic.
