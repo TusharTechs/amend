@@ -1,0 +1,81 @@
+{
+  "keyword": {
+    "violations_found": 11,
+    "violations_total": 13,
+    "found_ids": [
+      "V1",
+      "V2",
+      "V3",
+      "V4",
+      "V5",
+      "V6",
+      "V7",
+      "V9",
+      "V10",
+      "V12",
+      "V13"
+    ],
+    "missed_ids": [
+      "V8",
+      "V11"
+    ],
+    "decoys_flagged": [
+      "D1"
+    ],
+    "findings_to_review": 118,
+    "unmatched_findings": 72,
+    "seconds": 0.0,
+    "bobcoins": 0
+  },
+  "semgrep": {
+    "violations_found": 0,
+    "violations_total": 13,
+    "found_ids": [],
+    "missed_ids": [
+      "V1",
+      "V2",
+      "V3",
+      "V4",
+      "V5",
+      "V6",
+      "V7",
+      "V8",
+      "V9",
+      "V10",
+      "V11",
+      "V12",
+      "V13"
+    ],
+    "decoys_flagged": [],
+    "findings_to_review": 0,
+    "unmatched_findings": 0,
+    "seconds": 4.4,
+    "bobcoins": 0
+  },
+  "amend": {
+    "violations_found": 7,
+    "violations_total": 13,
+    "found_ids": [
+      "V1",
+      "V2",
+      "V3",
+      "V4",
+      "V5",
+      "V6",
+      "V7"
+    ],
+    "missed_ids": [
+      "V8",
+      "V9",
+      "V10",
+      "V11",
+      "V12",
+      "V13"
+    ],
+    "decoys_flagged": [],
+    "findings_to_review": 14,
+    "unmatched_findings": 0,
+    "seconds": 1.2,
+    "bobcoins": 0
+  }
+}
