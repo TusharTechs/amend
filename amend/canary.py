@@ -343,6 +343,20 @@ def run_canary(repo_root: Path | str, json_out: str | None = None) -> list[dict]
 # ──────────────────────────────────────────────────────────────────────────────
 
 
+def _display_path(path: str, repo_root: Path) -> str:
+    """Path relative to the target repo, so output never shows the home folder."""
+    try:
+        return str(Path(path).resolve().relative_to(repo_root.resolve()))
+    except ValueError:
+        return path
+
+
+def _display_snippet(snippet: str, limit: int = 100) -> str:
+    """Printable tail of a snippet; binary stores (sqlite) are shown as offsets only."""
+    text = "".join(ch if ch.isprintable() else "." for ch in snippet)
+    return text if len(text) <= limit else "..." + text[-(limit - 3):]
+
+
 def cmd_canary(args) -> None:
     repo_root = Path(args.repo)
     json_out = getattr(args, "json", None)
@@ -352,10 +366,13 @@ def cmd_canary(args) -> None:
     if hits:
         print(f"CANARY: {len(hits)} plaintext hit(s) found:")
         for h in hits:
-            print(
-                f"  [{h['store_type']}] {h['path']}:{h['offset_or_line']}"
-                f"  value={h['value_found']!r}  snippet={h['snippet']!r}"
+            line = (
+                f"  [{h['store_type']}] {_display_path(h['path'], repo_root)}:{h['offset_or_line']}"
+                f"  value={h['value_found']!r}"
             )
+            if h["store_type"] != "sqlite":
+                line += f"\n      {_display_snippet(h['snippet'])}"
+            print(line)
         sys.exit(1)
     else:
         print("CANARY: no plaintext hits found.")

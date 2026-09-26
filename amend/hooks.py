@@ -53,6 +53,15 @@ def _workspace_rel(path: str, cwd: str) -> str | None:
     return p.as_posix().removeprefix("./")
 
 
+# Bob's file-writing tools (write_to_file, apply_diff, insert_content, ...).
+# Matched by name so a renamed or newer edit tool is still checked.
+_EDIT_TOOL_RE = re.compile(r"write|diff|replace|insert|edit|create|patch", re.IGNORECASE)
+
+
+def _is_edit_tool(tool_name: str) -> bool:
+    return bool(tool_name) and bool(_EDIT_TOOL_RE.search(tool_name))
+
+
 def _is_locked_test(path: str, repo_root: Path, base_ref: str, cwd: str = ".") -> bool:
     """Return True if *path* resolves to a test file that exists at *base_ref*."""
     import subprocess
@@ -155,11 +164,7 @@ def _pre_tool_use(payload: dict) -> None:
             sys.exit(2)
 
     # 2. Check file edit paths
-    edit_tools = {
-        "write_file", "apply_diff", "search_and_replace",
-        "insert_content", "create_file", "edit_file",
-    }
-    if tool_name in edit_tools:
+    if _is_edit_tool(tool_name):
         path = tool_input.get("path", "")
 
         # Check locked directories
@@ -193,11 +198,7 @@ def _post_tool_use(payload: dict) -> None:
     _append_event(repo_root, "post-tool-use", f"tool={tool_name}")
 
     # After editing a .py file, run guard and print findings for that file
-    edit_tools = {
-        "write_file", "apply_diff", "search_and_replace",
-        "insert_content", "create_file", "edit_file",
-    }
-    if tool_name in edit_tools:
+    if _is_edit_tool(tool_name):
         path = tool_input.get("path", "")
         if path.endswith(".py"):
             try:

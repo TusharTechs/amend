@@ -204,27 +204,56 @@ def _cmd_guard(args: argparse.Namespace) -> None:
     cmd_guard(args)
 
 
+def _git_root(path: Path) -> Path:
+    """Top level of the git repository that contains *path* (the app may be a subfolder)."""
+    import subprocess
+    out = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=path,
+                         capture_output=True, text=True)
+    return Path(out.stdout.strip()).resolve() if out.returncode == 0 else path
+
+
+def _run_state(returncode: int) -> str:
+    return "PASS" if returncode == 0 else "FAIL" if returncode == 1 else "ERROR"
+
+
+def _rel(path: Path) -> str:
+    """Path relative to the current directory when possible, never the home folder."""
+    try:
+        return str(path.resolve().relative_to(Path.cwd().resolve()))
+    except ValueError:
+        return str(path)
+
+
 def cmd_verify(args: argparse.Namespace) -> None:
     from amend.verify import verify
-    repo = Path(args.repo).resolve()
-    app_dir = repo
+    app_dir = Path(args.repo).resolve()
+    repo = _git_root(app_dir)
     result = verify(repo, app_dir, base_ref=args.base)
     s = result["summary"]
-    print(f"Verification complete.")
+    print("Fail before, pass after:")
+    for t in result["obligation_tests"]:
+        base = _run_state(t["base_returncode"])
+        head = _run_state(t["head_returncode"])
+        verdict = "discriminating" if t["discriminating"] else "REJECTED"
+        print(f"  base {base:5s} head {head:5s} {verdict:14s} {t['test_file']}")
+    print(f"\nVerification complete.")
     print(f"  Obligation tests : {s['total_obligation_tests']}")
     print(f"  Discriminating   : {s['discriminating']}")
     print(f"  Rejected         : {s['rejected']}")
     print(f"  Passing (head)   : {s['passing_head']}")
     print(f"  Integrity clean  : {s['integrity_clean']}")
     print(f"  Regression green : {s['regression_green']}")
+    approved = result["integrity"].get("approved_changes", [])
+    if approved:
+        print(f"  Human-approved test rewrites: {len(approved)} (compliance/test_changes.yaml)")
     out = repo / ".amend" / "verification.json"
-    print(f"\nWritten: {out}")
+    print(f"\nWritten: {_rel(out)}")
 
 
 def cmd_evidence(args: argparse.Namespace) -> None:
     from amend.evidence import build_evidence
-    repo = Path(args.repo).resolve()
-    app_dir = repo
+    app_dir = Path(args.repo).resolve()
+    repo = _git_root(app_dir)
     cert = build_evidence(repo, app_dir, base_ref=args.base, run_id=args.run_id)
     counts = cert["status_counts"]
     print("Evidence pack built.")
@@ -232,7 +261,7 @@ def cmd_evidence(args: argparse.Namespace) -> None:
         print(f"  {status}: {n}")
     run_id = cert["meta"]["run_id"]
     ev_dir = repo / "evidence" / run_id
-    print(f"\nEvidence written to: {ev_dir}")
+    print(f"\nEvidence written to: {_rel(ev_dir)}")
 
 
 if __name__ == "__main__":
