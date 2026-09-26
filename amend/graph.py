@@ -516,9 +516,14 @@ class _RouterVisitor(ast.NodeVisitor):
         self._visit_func(node)
 
     def _visit_func(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
+        # Parameter-level dependencies, e.g. `user: dict = Depends(require_mfa)`,
+        # protect a route exactly like decorator-level ones.
+        defaults = list(node.args.defaults) + [d for d in node.args.kw_defaults if d is not None]
+        param_deps = [d for d in (_depends_name(v) for v in defaults) if d]
         for dec in node.decorator_list:
             method, path, router_var, deps = _parse_route_decorator(dec)
             if method:
+                deps = deps + [d for d in param_deps if d not in deps]
                 self.routes.append(
                     {
                         "func": node.name,

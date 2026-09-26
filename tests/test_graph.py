@@ -191,3 +191,26 @@ def test_fixture_ssns_not_in_graph_nodes(graph):
         if "sample_applicants" in nid
     ]
     assert not fixture_col_ids, f"Fixture data leaked into graph nodes: {fixture_col_ids}"
+
+
+def test_parameter_level_depends_counts_as_route_dependency(tmp_path):
+    """`user = Depends(require_mfa)` in the signature protects the route."""
+    from amend.graph import build
+
+    app = tmp_path / "app"
+    app.mkdir()
+    (app / "__init__.py").write_text("")
+    (app / "main.py").write_text(
+        "from fastapi import APIRouter, Depends, FastAPI\n"
+        "def require_mfa():\n    return {}\n"
+        "app = FastAPI()\n"
+        "r = APIRouter(prefix='/api/v1')\n"
+        "@r.get('/profile')\n"
+        "def profile(user: dict = Depends(require_mfa)):\n    return user\n"
+        "@r.get('/open')\n"
+        "def open_route():\n    return {}\n"
+        "app.include_router(r)\n"
+    )
+    missing = {n.id.split("::")[-1] for n in build(tmp_path).routes_missing_dependency("require_mfa")}
+    assert "profile" not in missing
+    assert "open_route" in missing
