@@ -48,6 +48,11 @@ def _make_app_skeleton(app_dir: Path) -> None:
     )
 
 
+def _write_module(app_dir: Path, name: str, source: str) -> None:
+    """Write a Python module at app_dir/<name>.py."""
+    (app_dir / f"{name}.py").write_text(source, encoding="utf-8")
+
+
 # ---------------------------------------------------------------------------
 # Unit tests for pure helpers
 # ---------------------------------------------------------------------------
@@ -82,9 +87,9 @@ def test_has_skip_xfail_false():
 @pytest.fixture()
 def repo(tmp_path):
     """
-    Build a minimal repo:
-      base commit: app/tests/test_hello.py (passes), no compliance tests
-      head commit (working tree): add a discriminating compliance test
+    Build a minimal repo with two commits:
+      initial: app skeleton + feature.py returning 0 + compliance/tests/conftest.py
+      head:    nothing extra (working tree is clean at HEAD)
     Returns (repo_root, app_dir).
     """
     root = tmp_path / "repo"
@@ -93,6 +98,17 @@ def repo(tmp_path):
 
     app = root / "myapp"
     _make_app_skeleton(app)
+
+    # feature.py at base: returns 0
+    _write_module(app, "feature", "def get_value():\n    return 0\n")
+
+    # conftest that puts the app dir on sys.path (needed by obligation tests
+    # that import app modules)
+    conftest = app / "compliance" / "tests" / "conftest.py"
+    conftest.write_text(
+        "import sys, pathlib\n"
+        "sys.path.insert(0, str(pathlib.Path(__file__).parent.parent.parent))\n"
+    )
     _commit_all(root, "initial")
 
     return root, app
@@ -118,25 +134,79 @@ def test_verification_json_written(repo):
     assert "summary" in data
 
 
-def test_discriminating_test_accepted(repo):
+def test_new_assert_true_test_rejected(repo):
     """
-    A test that FAILS on base and PASSES on head is discriminating and not rejected.
-    We achieve this by adding the compliance test only on HEAD.
-    On base the test file doesn't exist → rc=1 (fail), on head it passes → rc=0.
+    A brand-new test that only does `assert True` must be rejected.
+
+    Under the fixed logic the test file is copied into the base worktree and
+    run there; `assert True` passes on base (rc=0) so it is non-discriminating.
     """
     root, app = repo
-    # Write a passing compliance test (added only now, not on base)
     ob_test = app / "compliance" / "tests" / "test_sg1_always_true.py"
     ob_test.write_text("def test_sg1_ok():\n    assert True\n")
 
     result = verify(root, app, base_ref="HEAD")
     assert len(result["obligation_tests"]) == 1
     r = result["obligation_tests"][0]
-    assert r["discriminating"] is True
+    assert r["rejected"] is True
+    assert "non-discriminating" in r["rejection_reason"]
+
+
+def test_discriminating_test_accepted(repo):
+    """
+    A test that FAILS on base code and PASSES after a code fix is accepted.
+
+    The repo fixture sets up an initial commit with feature.py returning 0.
+    We commit a second "fix" commit that changes feature.py to return 1, then
+    write the obligation test (not yet committed) which asserts the fixed value.
+    base_ref="HEAD~1" → base worktree has get_value() == 0.
+    """
+    root, app = repo
+
+    # Commit a fix: feature now returns 1
+    _write_module(app, "feature", "def get_value():\n    return 1\n")
+    _commit_all(root, "fix: feature returns 1")
+
+    # Obligation test: asserts the fixed behaviour (uncommitted, HEAD working tree)
+    ob_test = app / "compliance" / "tests" / "test_sg1_feature.py"
+    ob_test.write_text(
+        "from feature import get_value\n"
+        "def test_sg1_value():\n"
+        "    assert get_value() == 1\n"
+    )
+
+    result = verify(root, app, base_ref="HEAD~1")
+    assert len(result["obligation_tests"]) == 1
+    r = result["obligation_tests"][0]
+    assert r["discriminating"] is True, f"expected discriminating, got: {r}"
     assert r["rejected"] is False
-    assert r["head_returncode"] == 0
-    # base_returncode is 1 because the file didn't exist on base
     assert r["base_returncode"] == 1
+    assert r["head_returncode"] == 0
+
+
+def test_inconclusive_import_error_rejected(repo):
+    """
+    A new test that imports a name missing at base gets exit code 2 (collection
+    error) on base → inconclusive → rejected with the matching reason.
+
+    The `repo` fixture already has an initial commit with no `missing_module`,
+    so base_ref="HEAD" is sufficient — no extra commit needed.
+    """
+    root, app = repo
+
+    # The obligation test references a module that does not exist anywhere
+    ob_test = app / "compliance" / "tests" / "test_sg2_import.py"
+    ob_test.write_text(
+        "from missing_module_xyzzy import something\n"
+        "def test_sg2_import():\n"
+        "    assert something() == 1\n"
+    )
+
+    result = verify(root, app, base_ref="HEAD")
+    assert len(result["obligation_tests"]) == 1
+    r = result["obligation_tests"][0]
+    assert r["rejected"] is True, f"expected rejected, got: {r}"
+    assert "base run errored" in r["rejection_reason"]
 
 
 def test_non_discriminating_test_rejected(repo):

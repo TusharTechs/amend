@@ -13,6 +13,7 @@ import ast
 import hashlib
 import json
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -160,9 +161,17 @@ def verify(repo_root: str | Path, app_dir: str | Path, base_ref: str = "HEAD~1")
                 integrity_findings.append({"file": rel, "issue": "skip_or_xfail_added"})
 
         # Obligation tests: fail-before / pass-after
+        base_compliance_tests = base_app_dir / "compliance" / "tests"
+        base_compliance_tests.mkdir(parents=True, exist_ok=True)
+
+        # Conftest: copy head conftest into base worktree if present on head
+        head_conftest = app_dir / "compliance" / "tests" / "conftest.py"
+        base_conftest = base_compliance_tests / "conftest.py"
+        if head_conftest.exists():
+            shutil.copy2(str(head_conftest), str(base_conftest))
+
         for ob_test_path in ob_test_files:
             test_rel = ob_test_path.name
-            base_compliance_tests = base_app_dir / "compliance" / "tests"
             base_ob_test = base_compliance_tests / test_rel
 
             ob_result: dict[str, Any] = {
@@ -176,12 +185,12 @@ def verify(repo_root: str | Path, app_dir: str | Path, base_ref: str = "HEAD~1")
                 "rejection_reason": "",
             }
 
+            # Copy the HEAD version of the test into the base worktree so we
+            # run the same test logic against the base-ref application code.
+            shutil.copy2(str(ob_test_path), str(base_ob_test))
+
             # Run on base (expect FAIL)
-            if base_ob_test.exists():
-                rc_base, out_base = _run_pytest([str(base_ob_test)], cwd=base_app_dir)
-            else:
-                # test didn't exist on base — treat as new
-                rc_base, out_base = 1, "(test did not exist on base)"
+            rc_base, out_base = _run_pytest([str(base_ob_test)], cwd=base_app_dir)
             ob_result["base_returncode"] = rc_base
             ob_result["base_output"] = out_base
 
@@ -190,12 +199,20 @@ def verify(repo_root: str | Path, app_dir: str | Path, base_ref: str = "HEAD~1")
             ob_result["head_returncode"] = rc_head
             ob_result["head_output"] = out_head
 
-            # Discrimination check: passes on base → non-discriminating → reject
+            # Discrimination check:
+            #   rc == 0  → already passes on base → non-discriminating → reject
+            #   rc == 1  → at least one test failed → discriminating
+            #   rc 2–5   → collection/import/no-tests error → inconclusive → reject
             if rc_base == 0:
                 ob_result["rejected"] = True
                 ob_result["rejection_reason"] = "non-discriminating: already passes on base"
-            else:
+            elif rc_base == 1:
                 ob_result["discriminating"] = True
+            else:
+                ob_result["rejected"] = True
+                ob_result["rejection_reason"] = (
+                    "base run errored; the test must exercise behavior that exists at base"
+                )
 
             obligation_results.append(ob_result)
 
