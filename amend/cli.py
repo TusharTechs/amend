@@ -162,10 +162,28 @@ def main() -> None:
     # guard subcommand
     guard_p = subparsers.add_parser("guard", help="Run zero-LLM compliance gate")
     guard_p.add_argument("--repo", default="demo/lendwise", metavar="REPO",
-                         help="Path to target repo (default: demo/lendwise)")
+                          help="Path to target repo (default: demo/lendwise)")
     guard_p.add_argument("--json", default=None, metavar="FILE",
-                         help="Write failures to JSON file")
+                          help="Write failures to JSON file")
     guard_p.set_defaults(func=_cmd_guard)
+
+    # verify subcommand
+    verify_p = subparsers.add_parser("verify", help="Run fail-before/pass-after proof engine")
+    verify_p.add_argument("--repo", default="demo/lendwise", metavar="REPO",
+                          help="Path to target repo (default: demo/lendwise)")
+    verify_p.add_argument("--base", default="HEAD~1", metavar="REF",
+                          help="Base git ref (default: HEAD~1)")
+    verify_p.set_defaults(func=cmd_verify)
+
+    # evidence subcommand
+    evidence_p = subparsers.add_parser("evidence", help="Build evidence pack")
+    evidence_p.add_argument("--run-id", default=None, dest="run_id", metavar="ID",
+                            help="Run ID (default: auto-generated)")
+    evidence_p.add_argument("--repo", default="demo/lendwise", metavar="REPO",
+                            help="Path to target repo (default: demo/lendwise)")
+    evidence_p.add_argument("--base", default="HEAD~1", metavar="REF",
+                            help="Base git ref (default: HEAD~1)")
+    evidence_p.set_defaults(func=cmd_evidence)
 
     args = parser.parse_args()
     args.func(args)
@@ -184,6 +202,37 @@ def _cmd_canary(args: argparse.Namespace) -> None:
 def _cmd_guard(args: argparse.Namespace) -> None:
     from amend.guard import cmd_guard
     cmd_guard(args)
+
+
+def cmd_verify(args: argparse.Namespace) -> None:
+    from amend.verify import verify
+    repo = Path(args.repo).resolve()
+    app_dir = repo
+    result = verify(repo, app_dir, base_ref=args.base)
+    s = result["summary"]
+    print(f"Verification complete.")
+    print(f"  Obligation tests : {s['total_obligation_tests']}")
+    print(f"  Discriminating   : {s['discriminating']}")
+    print(f"  Rejected         : {s['rejected']}")
+    print(f"  Passing (head)   : {s['passing_head']}")
+    print(f"  Integrity clean  : {s['integrity_clean']}")
+    print(f"  Regression green : {s['regression_green']}")
+    out = repo / ".amend" / "verification.json"
+    print(f"\nWritten: {out}")
+
+
+def cmd_evidence(args: argparse.Namespace) -> None:
+    from amend.evidence import build_evidence
+    repo = Path(args.repo).resolve()
+    app_dir = repo
+    cert = build_evidence(repo, app_dir, base_ref=args.base, run_id=args.run_id)
+    counts = cert["status_counts"]
+    print("Evidence pack built.")
+    for status, n in counts.items():
+        print(f"  {status}: {n}")
+    run_id = cert["meta"]["run_id"]
+    ev_dir = repo / "evidence" / run_id
+    print(f"\nEvidence written to: {ev_dir}")
 
 
 if __name__ == "__main__":
