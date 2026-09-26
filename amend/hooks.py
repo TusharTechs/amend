@@ -214,7 +214,7 @@ def _post_tool_use(payload: dict) -> None:
                 failures = run_guard(repo_root, cfg)
                 # Normalise path for comparison
                 try:
-                    rel = str(Path(path).resolve().relative_to(repo_root))
+                    rel = Path(path).resolve().relative_to(repo_root.resolve()).as_posix()
                 except ValueError:
                     rel = path
 

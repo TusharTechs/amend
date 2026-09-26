@@ -11,6 +11,21 @@ Amend turns a change in a regulation into a pull request that is proven to imple
 
 > Built for the IBM Bob 2.0 Hackathon (lablab.ai, September 2026). Demo regulation: the FTC Safeguards Rule, 16 CFR Part 314.
 
+## For judges: start here
+
+| What you want to see | Link |
+|---|---|
+| Live site: architecture, results, benchmark | [tushartechs.github.io/amend](https://tushartechs.github.io/amend/) |
+| Evidence certificate from the demo run | [certificate.html](https://tushartechs.github.io/amend/certificate.html) |
+| The remediation pull request, CI green | [Pull request #1](https://github.com/TusharTechs/amend/pull/1) |
+| A later regression the CI guard fails on the exact line | [Pull request #2](https://github.com/TusharTechs/amend/pull/2) (see its Files changed tab) |
+| IBM Bob task session summaries | [bob_sessions/](bob_sessions) |
+| The Bob pack: 5 modes, 5 skills, rules, 2 hooks, `/amend`, MCP config | [demo/lendwise/.bob/](demo/lendwise/.bob) |
+| How IBM Bob is used | [How IBM Bob is used](#how-ibm-bob-is-used) |
+| IBM watsonx.ai and Granite: what they do and the results | [IBM watsonx.ai and Granite](#ibm-watsonxai-and-granite), [the Granite drafts](demo/lendwise/compliance/drafts/granite-2026-09-01.yaml) |
+| Detection benchmark | [Benchmark](#benchmark) |
+| Run it on macOS, Linux or Windows | [Quickstart](#quickstart) |
+
 ---
 
 ## The problem
@@ -216,17 +231,44 @@ How to read it: keyword search points at files that contain suspicious words, no
 
 ## Quickstart
 
+You need Python 3.11 or newer and git. The engine and its tests run on macOS, Linux and Windows.
+
+**macOS and Linux**
+
 ```bash
-python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
-.venv/bin/amend diff --from 2023-07-01 --to 2026-09-01 --substantive   # the redline
-.venv/bin/amend guard --repo demo/lendwise                             # clause-cited findings
-.venv/bin/amend canary --repo demo/lendwise                            # plaintext canary sweep
-.venv/bin/pytest -q                                                    # engine + demo tests
-.venv/bin/amend screen --repo demo/lendwise                            # optional: Granite prompt-injection screen
-.venv/bin/amend draft --from 2023-07-01 --to 2026-09-01                # optional: Granite obligation drafts
+git clone https://github.com/TusharTechs/amend.git && cd amend
+python3 -m venv .venv
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/pytest -q                                       # engine and demo tests
+.venv/bin/amend diff --from 2023-07-01 --to 2026-09-01 --substantive
+.venv/bin/amend guard --repo demo/lendwise                # clause-cited findings
+.venv/bin/amend canary --repo demo/lendwise               # plaintext canary sweep
+git switch amend/ftc-safeguards-2024
+.venv/bin/amend verify --base main                        # fail before, pass after
 ```
 
-In IBM Bob: open `demo/lendwise` as the workspace. Bob starts MCP servers from `/` with a minimal environment, so `.bob/mcp.json` changes into the repository at `$AMEND_HOME`, which defaults to `~/Documents/amend`. If you cloned it somewhere else, add `"env": {"AMEND_HOME": "/path/to/amend"}` to the `amend` entry. Check that the server shows as connected with eleven tools, then run `/amend`.
+**Windows (PowerShell)**
+
+```powershell
+git clone https://github.com/TusharTechs/amend.git; cd amend
+py -3 -m venv .venv
+.venv\Scripts\pip install -e ".[dev]"
+.venv\Scripts\pytest -q
+.venv\Scripts\amend diff --from 2023-07-01 --to 2026-09-01 --substantive
+.venv\Scripts\amend guard --repo demo/lendwise
+.venv\Scripts\amend canary --repo demo/lendwise
+git switch amend/ftc-safeguards-2024
+.venv\Scripts\amend verify --base main
+```
+
+**Optional: IBM Granite on watsonx.ai.** Copy `.env.example` to `.env` (`cp .env.example .env`, or `Copy-Item .env.example .env` in PowerShell), set `IBM_API_KEY` and `WATSONX_PROJECT_ID`, then run `amend screen --repo demo/lendwise` and `amend draft --from 2023-07-01 --to 2026-09-01` with the same prefix as above.
+
+**In IBM Bob.** Open `demo/lendwise` as the workspace, check that the `amend` MCP server shows as Connected with eleven tools, then run `/amend`.
+
+- macOS and Linux: `.bob/mcp.json` works as it is. Bob starts MCP servers from `/` with a minimal environment, so the entry changes into the repository at `$AMEND_HOME`, which defaults to `~/Documents/amend`. If you cloned it elsewhere, add `"env": {"AMEND_HOME": "/path/to/amend"}` to the `amend` entry.
+- Windows: copy [`bob-pack/windows/mcp.json`](bob-pack/windows/mcp.json) and [`bob-pack/windows/settings.json`](bob-pack/windows/settings.json) into `demo/lendwise\.bob\`, and replace `C:\path\to\amend` with your clone. The server reads `AMEND_HOME` itself, so no shell is needed, and the hooks call `..\..\.venv\Scripts\python.exe`.
+
+CI runs the full test suite on Ubuntu, macOS and Windows on every push to `main`. The Bob setup was exercised on macOS during the hackathon; the Windows Bob files are provided but were not run inside Bob.
 
 ## Safety model
 

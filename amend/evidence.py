@@ -156,7 +156,7 @@ def _test_matches_ob(test_file: str, ob_id: str) -> bool:
 
 def _rel_to(path: str, root: Path) -> str:
     try:
-        return str(Path(path).resolve().relative_to(Path(root).resolve()))
+        return Path(path).resolve().relative_to(Path(root).resolve()).as_posix()
     except (ValueError, OSError):
         return path
 
