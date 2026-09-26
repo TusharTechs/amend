@@ -28,12 +28,12 @@ def _run_hook(event: str, payload: dict) -> subprocess.CompletedProcess:
     )
 
 
-def _pre_tool_use_edit(path: str) -> subprocess.CompletedProcess:
+def _pre_tool_use_edit(path: str, tool_name: str = "write_file") -> subprocess.CompletedProcess:
     payload = {
         "session_id": "test",
         "cwd": str(REPO_ROOT),
         "hook_event_name": "PreToolUse",
-        "tool_name": "write_file",
+        "tool_name": tool_name,
         "tool_input": {"path": path},
         "tool_use_id": "test-tool-1",
     }
@@ -120,3 +120,16 @@ def test_benchmark_path_locked():
     """Editing a file under benchmark/ must be blocked."""
     result = _pre_tool_use_edit("benchmark/results.json")
     assert result.returncode == 2
+
+
+@pytest.mark.parametrize("tool_name", ["write_to_file", "apply_diff", "insert_content", "search_and_replace"])
+def test_locked_test_blocked_for_every_bob_edit_tool(tool_name):
+    """Bob's own edit tools, including a full-file write_to_file, cannot touch a locked test."""
+    result = _pre_tool_use_edit("tests/test_verify.py", tool_name=tool_name)
+    assert result.returncode == 2, result.stderr
+
+
+def test_read_tool_is_not_an_edit():
+    """Reading a locked test is allowed."""
+    result = _pre_tool_use_edit("tests/test_verify.py", tool_name="read_file")
+    assert result.returncode == 0, result.stderr
