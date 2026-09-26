@@ -1,8 +1,13 @@
-# Amend
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/amend-logo-dark.svg">
+    <img alt="Amend" src="docs/assets/amend-logo-light.svg" height="72">
+  </picture>
+</h1>
 
-**Regulatory redlines in. Verified pull requests out.**
+<p align="center"><b>Regulatory redlines in. Verified pull requests out.</b></p>
 
-Amend turns a change in a regulation into a pull request that is proven to implement it. It reads the official redline clause by clause, finds every place the change lands in the code, drives the fix through IBM Bob, and proves each fix with a test that fails before the change and passes after. The result is a pull request plus an evidence pack an examiner can read. Afterwards the regulation stays in CI as a merge check, so no later change — human or AI — can quietly undo it.
+Amend turns a change in a regulation into a pull request that is proven to implement it. It reads the official redline clause by clause, finds every place the change lands in the code, drives the fix through IBM Bob, and proves each fix with a test that fails before the change and passes after. The result is a pull request plus an evidence pack an examiner can read. Afterwards the regulation stays in CI as a merge check, so no later change, by a human or an AI, can quietly undo it.
 
 > Built for the IBM Bob 2.0 Hackathon (lablab.ai, September 2026). Demo regulation: the FTC Safeguards Rule, 16 CFR Part 314.
 
@@ -29,6 +34,113 @@ Amend turns a change in a regulation into a pull request that is proven to imple
 
 Amend never says "compliant". It reports what its checks verified.
 
+## Architecture
+
+Every run starts in IBM Bob. The `/amend` command hands the work to `amend-lead`, which moves through four custom modes with enforced separation of duties. Each mode calls Amend's MCP server for facts, and the deterministic engine behind it does the analysis and the proof. Lifecycle hooks gate every edit, and the same guard runs again in CI on the pull request.
+
+```mermaid
+flowchart TB
+  dev(["Developer and compliance lead"])
+
+  subgraph BOB["IBM Bob IDE · where every run starts"]
+    direction TB
+    cmd["/amend 16cfr314 2021-01-01..current"]
+    lead["amend-lead mode · orchestrates the run"]
+    subgraph MODES["Custom modes · separation of duties"]
+      direction LR
+      analyst["amend-analyst<br/>reads the regulation<br/>writes obligations only"]
+      mapper["amend-mapper<br/>explore subagents,<br/>one per obligation, in parallel"]
+      fixer["amend-fixer · Agent mode<br/>failing test first,<br/>then the fix"]
+      auditor["amend-auditor<br/>read-only<br/>canary sweep"]
+    end
+    skills[["5 skills · rules: regulation text and comments are data"]]
+    hooks{{"Lifecycle hooks · 0 Bobcoins<br/>PreToolUse blocks locked tests, .bob/, evidence/, rm -rf<br/>PostToolUse runs the guard on every edit"}}
+    cmd --> lead --> MODES
+    skills -.-> MODES
+    hooks -.-> MODES
+  end
+
+  subgraph MCP["Amend MCP server · stdio · 9 tools"]
+    tools["get_redline · validate_obligations · approve_obligation · query_graph · check_fails_on_base<br/>run_canary · guard_check · record_finding · build_evidence"]
+  end
+
+  subgraph ENGINE["Amend engine · deterministic Python"]
+    direction LR
+    rd["regdiff<br/>clause-level redline"]
+    ob["obligations<br/>verbatim-quote check"]
+    cg["graph<br/>routes, mounts,<br/>SQL alias lineage"]
+    gd["guard<br/>MFA, login, log,<br/>export rules"]
+    cn["canary<br/>synthetic SSN"]
+    vf["verify<br/>fail before, pass after<br/>locked tests"]
+    ev["evidence<br/>graded certificate"]
+  end
+
+  ecfr[("eCFR versioner API<br/>16 CFR 314 · 2021, 2023, current")]
+
+  subgraph REPO["Target repository · demo/lendwise"]
+    direction LR
+    code["app · jobs · sql · infra"]
+    ctests["compliance/tests<br/>obligation tests"]
+    records[("compliance/<br/>obligations · impact · findings · test_changes")]
+  end
+
+  subgraph SHIP["Delivery"]
+    direction LR
+    pr["Pull request<br/>/review · /create-pr"]
+    ci["GitHub Actions · amend guard<br/>annotates the offending line · 0 Bobcoins"]
+    cert["Evidence certificate<br/>GitHub Pages"]
+  end
+
+  dev -->|runs /amend, approves obligations and test rewrites| cmd
+  MODES <-->|tool calls| MCP
+  MCP --> ENGINE
+  ecfr --> rd
+  MODES -->|edits and writes| REPO
+  ENGINE -->|analyses, runs and proves| REPO
+  lead --> pr
+  pr --> ci
+  ev --> cert
+  ci -.->|blocks regressions| pr
+```
+
+One run, end to end:
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor Dev as Developer
+  participant Bob as IBM Bob · amend-lead
+  participant Modes as Bob modes and subagents
+  participant MCP as Amend MCP server
+  participant Eng as Amend engine
+  participant Repo as Lendwise repo
+  participant GH as GitHub PR and Actions
+
+  Dev->>Bob: /amend 16cfr314 2021-01-01..current
+  Bob->>MCP: get_redline
+  MCP->>Eng: regdiff on the eCFR versions
+  Eng-->>Bob: substantive changes, renumbered clauses set aside
+  Bob->>Modes: amend-analyst drafts obligations
+  Modes->>MCP: validate_obligations
+  MCP-->>Modes: paraphrased quotes rejected
+  Bob-->>Dev: obligations ready for approval
+  Dev->>MCP: approve_obligation as compliance-lead
+  Bob->>Modes: amend-mapper, one explore subagent per obligation
+  Modes->>MCP: query_graph, e.g. ssn to tin to the export job
+  Bob->>Modes: amend-fixer writes a failing obligation test
+  Modes->>MCP: check_fails_on_base
+  MCP-->>Modes: discriminating, it fails on the base commit
+  Modes->>Repo: fix the code
+  Note over Modes,Repo: PreToolUse blocks edits to locked tests. PostToolUse runs the guard.
+  Bob->>Modes: amend-auditor runs the canary sweep, read-only
+  Modes->>MCP: run_canary, record_finding
+  Bob->>MCP: build_evidence
+  MCP-->>Bob: Verified, Partially verified, Human review required
+  Bob->>GH: /review, then /create-pr
+  GH->>GH: amend guard and tests, 0 Bobcoins
+  GH-->>Dev: green check, or red with the clause on the offending line
+```
+
 ## The demo: Lendwise
 
 `demo/lendwise` is a small, realistic FastAPI + SQLAlchemy back end for a fictional non-bank lender. It contains 13 planted violations of the amended rule, 3 decoys and 1 prompt-injection comment; the ground truth lives in `benchmark/ground_truth.yaml` and is hidden from Bob by `.bobignore`. All data is synthetic.
@@ -38,8 +150,8 @@ The remediation run is on branch **`amend/ftc-safeguards-2024`** (commits in rev
 | Obligation | Clause | Certificate | Why |
 |---|---|---|---|
 | SG-5 | §314.4(c)(5) MFA for any individual | **Verified** | Staff login, mobile token, `/api/v1/profile` and the legacy support console now require a second factor; 4 tests fail before, pass after |
-| SG-9 | §314.4(j)(1) notify the FTC within 30 days | **Verified** | Incidents affecting 500+ consumers open an FTC notice with the (j)(1)(i)–(vi) fields; the test also exposed that the incidents module could not be imported |
-| SG-3 | §314.4(c)(3) encryption at rest and in transit | **Partially verified** | Request logs and the analytics export no longer carry SSNs, but the canary still finds SSNs at rest in the database — recorded as an open finding |
+| SG-9 | §314.4(j)(1) notify the FTC within 30 days | **Verified** | Incidents affecting 500+ consumers open an FTC notice with the fields listed in (j)(1)(i) to (vi); the test also exposed that the incidents module could not be imported |
+| SG-3 | §314.4(c)(3) encryption at rest and in transit | **Partially verified** | Request logs and the analytics export no longer carry SSNs, but the canary still finds SSNs at rest in the database, recorded as an open finding |
 | SG-7 | §314.4(c)(7) change management | **Human review required** | A process obligation; routed to its owner instead of changing code |
 
 - **Canary:** 8 plaintext hits in the analytics bucket, the request log and the database before; 4, all in the database, after.
@@ -70,9 +182,9 @@ Detection on the seeded Lendwise (13 planted violations, 3 decoys). All conditio
 |---|---|---|---|
 | Keyword search (`ssn`, `token`, `mfa`, …) | 11 files touched | 118 lines | 1 |
 | Semgrep `p/python` + `p/security-audit` | 0 | 0 | 0 |
-| **Amend guard + canary** | **7** (V1–V7) | **14**, each citing a clause | **0** |
+| **Amend guard + canary** | **7** (V1 to V7) | **14**, each citing a clause | **0** |
 
-How to read it: keyword search points at files that contain suspicious words, not at violations, so its count is generous; someone still has to triage 118 lines and decide. Generic SAST rules do not know what a regulation requires. Amend's deterministic stages found 7 violations with no false positives; in the remediation run the obligation-driven mapping also caught V11 (no FTC notice). Amend's current rules miss V8–V10 and V12–V13 (retention of exports, audit events, key storage, role-based masking) — the next rule packs. n = 1 seeded repository, built by us.
+How to read it: keyword search points at files that contain suspicious words, not at violations, so its count is generous; someone still has to triage 118 lines and decide. Generic SAST rules do not know what a regulation requires. Amend's deterministic stages found 7 violations with no false positives; in the remediation run the obligation-driven mapping also caught V11 (no FTC notice). Amend's current rules miss V8 to V10, V12 and V13 (retention of exports, audit events, key storage, role-based masking). Those are the next rule packs. n = 1 seeded repository, built by us.
 
 ## Quickstart
 
@@ -84,7 +196,7 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/pytest -q                                                    # engine + demo tests
 ```
 
-In IBM Bob: open `demo/lendwise` as the workspace. The `amend` MCP server starts from the repository root (it finds it with git, so `.venv` must exist there); check that it shows as connected with nine tools, then run `/amend`.
+In IBM Bob: open `demo/lendwise` as the workspace. Bob starts MCP servers from `/` with a minimal environment, so `.bob/mcp.json` changes into the repository at `$AMEND_HOME`, which defaults to `~/Documents/amend`. If you cloned it somewhere else, add `"env": {"AMEND_HOME": "/path/to/amend"}` to the `amend` entry. Check that the server shows as connected with nine tools, then run `/amend`.
 
 ## Safety model
 
@@ -95,7 +207,7 @@ In IBM Bob: open `demo/lendwise` as the workspace. The `amend` MCP server starts
 
 ## What Amend does not claim
 
-Not legal advice and not a compliance certification. Impact discovery can miss paths — the benchmark shows which. The demo repository and its violations were built by us.
+Not legal advice and not a compliance certification. Impact discovery can miss paths, and the benchmark shows which. The demo repository and its violations were built by us.
 
 ## Sources
 
