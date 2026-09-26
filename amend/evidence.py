@@ -10,7 +10,9 @@ build_evidence(repo_root, app_dir, base_ref, run_id=None) -> dict
 from __future__ import annotations
 
 import hashlib
+import html
 import json
+import re
 import subprocess
 import uuid
 from datetime import datetime, timezone
@@ -204,6 +206,13 @@ def _canary_at_ref(repo_root: Path, app_dir: Path, base_ref: str) -> list[dict]:
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def _clean_snippet(snippet: str, limit: int = 80) -> str:
+    """Printable, HTML-escaped snippet. Binary stores such as sqlite pages would
+    otherwise render as replacement glyphs, and raw '<' or '&' would break the page."""
+    runs = re.findall(r"[\x20-\x7e]{4,}", snippet)
+    return html.escape(" · ".join(r.strip() for r in runs)[:limit])
+
+
 def _build_html(cert: dict) -> str:
     meta = cert["meta"]
     rows = cert["obligations"]
@@ -288,7 +297,7 @@ def _build_html(cert: dict) -> str:
                 f'<tr><td>{h.get("store_type","")}</td>'
                 f'<td><code>{h.get("path","")}</code></td>'
                 f'<td>{h.get("offset_or_line","")}</td>'
-                f'<td><code>{h.get("snippet","")[:80]}</code></td></tr>\n'
+                f'<td><code>{_clean_snippet(h.get("snippet", ""))}</code></td></tr>\n'
             )
         return (
             '<table style="width:100%;font-size:0.85em">'

@@ -291,3 +291,13 @@ def test_scrub_removes_absolute_repo_and_home_paths(tmp_path):
     assert clean["path"] == "demo/lendwise/var/x.db"
     assert clean["out"][0].startswith("~/")
     assert str(tmp_path) not in str(clean) and home not in str(clean)
+
+
+def test_certificate_snippets_are_printable_and_escaped():
+    from amend.evidence import _clean_snippet
+
+    raw = "\x00\x02#\x1fB\ufffdq\x08A Y000-**-****<b>&x\x00pending"
+    out = _clean_snippet(raw)
+    assert "\ufffd" not in out and "\x00" not in out
+    assert "&lt;b&gt;&amp;x" in out
+    assert "000-**-****" in out
