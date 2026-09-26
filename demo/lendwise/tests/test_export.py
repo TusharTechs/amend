@@ -65,4 +65,5 @@ def test_export_csv_contents():
         assert rows[0]["id"] == "1"
         assert rows[0]["income"] == "55000.0"
         assert rows[0]["status"] == "approved"
-        assert rows[0]["tin"] == "000-12-3456"
+        assert "tin" not in rows[0]
+        assert "000-12-3456" not in open(out_path).read()

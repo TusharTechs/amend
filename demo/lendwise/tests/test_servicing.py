@@ -47,7 +47,7 @@ def test_legacy_impersonate_requires_staff_key(client, db_session):
     assert resp.status_code == 401
 
 
-def test_legacy_impersonate_with_valid_key(client, db_session):
+def test_legacy_impersonate_with_valid_key(client, db_session, mfa_token):
     import os
     from app.models import Customer
     from app import auth as auth_mod
@@ -63,7 +63,7 @@ def test_legacy_impersonate_with_valid_key(client, db_session):
 
     resp = client.get(
         f"/internal/v1/support/impersonate/{customer.id}",
-        headers={"X-Staff-Key": staff_key},
+        headers={"X-Staff-Key": staff_key, "Authorization": f"Bearer {mfa_token}"},
     )
     # Either 200 (found) or 404 (db isolation) is acceptable
     assert resp.status_code in (200, 404)
