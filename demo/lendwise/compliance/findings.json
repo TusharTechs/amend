@@ -1,0 +1,11 @@
+[
+  {
+    "obligation_id": "SG-3",
+    "file": "app/models.py",
+    "line": 24,
+    "message": "Canary SSN 000-00-0417 and account 000000417 found in plaintext in the SQLite file: applications.ssn and bank_account_number are not encrypted at rest. Needs field encryption with a key held outside the database (see 314.2(m)).",
+    "source": "canary",
+    "status": "open",
+    "ts": "2026-09-26T12:06:24.457588+00:00"
+  }
+]
