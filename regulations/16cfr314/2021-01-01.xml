@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<DIV5 N="314" TYPE="PART" VOLUME="1" hierarchy_metadata="{&amp;quot;path&amp;quot;:&amp;quot;/on/_SUBSTITUTE_DATE_/title-16/part-314&amp;quot;,&amp;quot;citation&amp;quot;:&amp;quot;16 CFR Part 314&amp;quot;}">
+<HEAD>PART 314 - STANDARDS FOR SAFEGUARDING CUSTOMER INFORMATION
+</HEAD>
+<AUTH>
+<HED>Authority:</HED><PSPACE>15 U.S.C. 6801(b), 6805(b)(2).
+</PSPACE></AUTH>
+<SOURCE>
+<HED>Source:</HED><PSPACE>67 FR 36493, May 23, 2002, unless otherwise noted.
+</PSPACE></SOURCE>
+<DIV8 N="314.1" TYPE="SECTION" hierarchy_metadata="{&quot;path&quot;:&quot;/on/_SUBSTITUTE_DATE_/title-16/section-314.1&quot;,&quot;citation&quot;:&quot;16 CFR 314.1&quot;}">
+<HEAD>&#xA7; 314.1 Purpose and scope.</HEAD>
+<P>(a) <I>Purpose.</I> This part, which implements sections 501 and 505(b)(2) of the Gramm-Leach-Bliley Act, sets forth standards for developing, implementing, and maintaining reasonable administrative, technical, and physical safeguards to protect the security, confidentiality, and integrity of customer information.</P>
+<P>(b) <I>Scope.</I> This part applies to the handling of customer information by all financial institutions over which the Federal Trade Commission (&#x201C;FTC&#x201D; or &#x201C;Commission&#x201D;) has jurisdiction. This part refers to such entities as &#x201C;you.&#x201D; This part applies to all customer information in your possession, regardless of whether such information pertains to individuals with whom you have a customer relationship, or pertains to the customers of other financial institutions that have provided such information to you.</P>
+</DIV8>
+
+<DIV8 N="314.2" TYPE="SECTION" hierarchy_metadata="{&quot;path&quot;:&quot;/on/_SUBSTITUTE_DATE_/title-16/section-314.2&quot;,&quot;citation&quot;:&quot;16 CFR 314.2&quot;}">
+<HEAD>&#xA7; 314.2 Definitions.</HEAD>
+<P>(a) <I>In general.</I> Except as modified by this part or unless the context otherwise requires, the terms used in this part have the same meaning as set forth in the Commission's rule governing the Privacy of Consumer Financial Information, 16 CFR part 313.</P>
+<P>(b) <I>Customer information</I> means any record containing nonpublic personal information as defined in 16 CFR 313.3(n), about a customer of a financial institution, whether in paper, electronic, or other form, that is handled or maintained by or on behalf of you or your affiliates.</P>
+<P>(c) <I>Information security program</I> means the administrative, technical, or physical safeguards you use to access, collect, distribute, process, protect, store, use, transmit, dispose of, or otherwise handle customer information.</P>
+<P>(d) <I>Service provider</I> means any person or entity that receives, maintains, processes, or otherwise is permitted access to customer information through its provision of services directly to a financial institution that is subject to this part.</P>
+</DIV8>
+
+<DIV8 N="314.3" TYPE="SECTION" hierarchy_metadata="{&quot;path&quot;:&quot;/on/_SUBSTITUTE_DATE_/title-16/section-314.3&quot;,&quot;citation&quot;:&quot;16 CFR 314.3&quot;}">
+<HEAD>&#xA7; 314.3 Standards for safeguarding customer information.</HEAD>
+<P>(a) <I>Information security program.</I> You shall develop, implement, and maintain a comprehensive information security program that is written in one or more readily accessible parts and contains administrative, technical, and physical safeguards that are appropriate to your size and complexity, the nature and scope of your activities, and the sensitivity of any customer information at issue. Such safeguards shall include the elements set forth in &#xA7; 314.4 and shall be reasonably designed to achieve the objectives of this part, as set forth in paragraph (b) of this section.</P>
+<P>(b) <I>Objectives.</I> The objectives of section 501(b) of the Act, and of this part, are to:</P>
+<P>(1) Insure the security and confidentiality of customer information;</P>
+<P>(2) Protect against any anticipated threats or hazards to the security or integrity of such information; and</P>
+<P>(3) Protect against unauthorized access to or use of such information that could result in substantial harm or inconvenience to any customer.</P>
+</DIV8>
+
+<DIV8 N="314.4" TYPE="SECTION" hierarchy_metadata="{&quot;path&quot;:&quot;/on/_SUBSTITUTE_DATE_/title-16/section-314.4&quot;,&quot;citation&quot;:&quot;16 CFR 314.4&quot;}">
+<HEAD>&#xA7; 314.4 Elements.</HEAD>
+<P>In order to develop, implement, and maintain your information security program, you shall:</P>
+<P>(a) Designate an employee or employees to coordinate your information security program.</P>
+<P>(b) Identify reasonably foreseeable internal and external risks to the security, confidentiality, and integrity of customer information that could result in the unauthorized disclosure, misuse, alteration, destruction or other compromise of such information, and assess the sufficiency of any safeguards in place to control these risks. At a minimum, such a risk assessment should include consideration of risks in each relevant area of your operations, including:</P>
+<P>(1) Employee training and management;</P>
+<P>(2) Information systems, including network and software design, as well as information processing, storage, transmission and disposal; and</P>
+<P>(3) Detecting, preventing and responding to attacks, intrusions, or other systems failures.</P>
+<P>(c) Design and implement information safeguards to control the risks you identify through risk assessment, and regularly test or otherwise monitor the effectiveness of the safeguards' key controls, systems, and procedures.</P>
+<P>(d) Oversee service providers, by:</P>
+<P>(1) Taking reasonable steps to select and retain service providers that are capable of maintaining appropriate safeguards for the customer information at issue; and</P>
+<P>(2) Requiring your service providers by contract to implement and maintain such safeguards.</P>
+<P>(e) Evaluate and adjust your information security program in light of the results of the testing and monitoring required by paragraph (c) of this section; any material changes to your operations or business arrangements; or any other circumstances that you know or have reason to know may have a material impact on your information security program.</P>
+</DIV8>
+
+<DIV8 N="314.5" TYPE="SECTION" hierarchy_metadata="{&quot;path&quot;:&quot;/on/_SUBSTITUTE_DATE_/title-16/section-314.5&quot;,&quot;citation&quot;:&quot;16 CFR 314.5&quot;}">
+<HEAD>&#xA7; 314.5 Effective date.</HEAD>
+<P>(a) Each financial institution subject to the Commission's jurisdiction must implement an information security program pursuant to this part no later than May 23, 2003.</P>
+<P>(b) Two-year grandfathering of service contracts. Until May 24, 2004, a contract you have entered into with a nonaffiliated third party to perform services for you or functions on your behalf satisfies the provisions of &#xA7; 314.4(d), even if the contract does not include a requirement that the service provider maintain appropriate safeguards, as long as you entered into the contract not later than June 24, 2002.</P>
+</DIV8>
+
+</DIV5>

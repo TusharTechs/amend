@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "amend"
+version = "0.1.0"
+description = "Regulatory redlines in. Verified pull requests out."
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml",
+    "sqlglot",
+    "networkx",
+    "mcp[cli]",
+]
+
+[project.scripts]
+amend = "amend.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "fastapi",
+    "sqlalchemy",
+    "httpx",
+    "pytest",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["amend*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "demo/lendwise/tests"]
