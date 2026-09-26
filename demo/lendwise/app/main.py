@@ -4,9 +4,10 @@ import os
 from fastapi import Depends, FastAPI
 from fastapi.routing import APIRouter
 
-from .auth import get_current_user, require_mfa
+from .auth import require_mfa
 from .auth_routes import router as auth_router
 from .database import engine
+from .incidents import router as incidents_router
 from .logging_mw import RequestBodyLoggingMiddleware
 from .models import Base
 from .routers.applications import router as applications_router
@@ -51,21 +52,21 @@ def health():
 api = APIRouter(prefix="/api/v1", dependencies=[Depends(require_mfa)])
 api.include_router(applications_router)
 api.include_router(servicing_router)
+api.include_router(incidents_router)
 app.include_router(api)
 
 # ── Mobile endpoints ──────────────────────────────────────────────────────────
 mobile_router = APIRouter(prefix="/api/v1")
 
 
-@mobile_router.get("/profile", dependencies=[Depends(get_current_user)])
-def mobile_profile(user: dict = Depends(get_current_user)):
+@mobile_router.get("/profile")
+def mobile_profile(user: dict = Depends(require_mfa)):
     return {"sub": user.get("sub"), "customer_id": user.get("customer_id")}
 
 
 app.include_router(mobile_router)
 
 # ── Legacy support console ────────────────────────────────────────────────────
-support_app = FastAPI(title="Lendwise Internal Support")
-support_app.include_router(legacy_router)
-
-app.mount("/internal/v1/support", support_app)
+# Included as a router (not a mounted sub-app) so it inherits require_mfa;
+# the staff API key alone is no longer enough.
+app.include_router(legacy_router, prefix="/internal/v1/support", dependencies=[Depends(require_mfa)])

@@ -8,20 +8,20 @@ logger = logging.getLogger("lendwise.http")
 
 
 class RequestBodyLoggingMiddleware(BaseHTTPMiddleware):
+    """Request logging that records the shape of a request, never its body.
+
+    Bodies carry customer information (SSNs, account numbers), which
+    16 CFR 314.4(c)(3) requires to stay encrypted; logs are not.
+    """
+
     async def dispatch(self, request: Request, call_next):
         if logger.isEnabledFor(logging.DEBUG):
-            body = await request.body()
             logger.debug(
-                "incoming request method=%s path=%s body=%s",
+                "incoming request method=%s path=%s content_length=%s",
                 request.method,
                 request.url.path,
-                body.decode(errors="replace"),
+                request.headers.get("content-length", "0"),
             )
-            # rebuild the receive channel so the handler still sees the body
-            async def receive():
-                return {"type": "http.request", "body": body}
-
-            request = Request(request.scope, receive)
 
         start = time.perf_counter()
         response = await call_next(request)
