@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Amend</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:image" content="https://tushartechs.github.io/amend/assets/amend-cover-1200x630.png">
 <meta name="description" content="Amend turns a regulatory change into a verified pull request, running inside IBM Bob.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +29,8 @@
 body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 var(--body);padding:0 16px 64px}
 a{color:var(--blue)}
 .wrap{max-width:1000px;margin:0 auto}
-header{padding:56px 0 32px;border-bottom:1px solid var(--rule)}
+.logo img{display:block;height:44px;width:auto;margin:0 0 28px}
+header{padding:48px 0 32px;border-bottom:1px solid var(--rule)}
 .eyebrow{font:500 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin:0 0 20px}
 h1{font:700 clamp(36px,6vw,64px)/1.02 var(--display);margin:0 0 20px;letter-spacing:-.01em;text-wrap:balance}
 .lede{font-size:19px;color:var(--ink-2);max-width:720px;margin:0 0 28px}
@@ -63,11 +67,16 @@ td code,.mono{font:13px var(--mono)}
 .bar .n{font:500 13px var(--mono);min-width:88px}
 footer{padding:32px 0;color:var(--ink-3);font-size:13.5px}
 @media (max-width:560px){.steps li{grid-template-columns:28px 1fr}.steps .tag{grid-column:2}}
+pre.mermaid{margin:0;background:transparent;text-align:center;overflow-x:auto}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
+  <picture class="logo">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/amend-logo-dark.svg">
+    <img src="assets/amend-logo-light.svg" alt="Amend" height="44">
+  </picture>
   <p class="eyebrow">Amend · built with IBM Bob 2.0 · demo regulation 16 CFR Part 314</p>
   <h1>This sentence just became a bug.</h1>
   <div class="redline">
@@ -96,7 +105,7 @@ footer{padding:32px 0;color:var(--ink-3);font-size:13.5px}
   <div class="tbl"><table>
     <tr><th>Obligation</th><th>Clause</th><th>Certificate</th><th>What changed</th></tr>
     <tr><td>SG-5</td><td class="mono">314.4(c)(5)</td><td><span class="s v">Verified</span></td><td>Second factor on staff and mobile login; the profile route and the legacy support console now require an MFA session</td></tr>
-    <tr><td>SG-9</td><td class="mono">314.4(j)(1)</td><td><span class="s v">Verified</span></td><td>Incidents affecting 500+ consumers open an FTC notice due within 30 days, with the (j)(1)(i)–(vi) fields</td></tr>
+    <tr><td>SG-9</td><td class="mono">314.4(j)(1)</td><td><span class="s v">Verified</span></td><td>Incidents affecting 500+ consumers open an FTC notice due within 30 days, with the fields listed in (j)(1)(i) to (vi)</td></tr>
     <tr><td>SG-3</td><td class="mono">314.4(c)(3)</td><td><span class="s p">Partially verified</span></td><td>Logs and the analytics export no longer carry SSNs; the canary still finds SSNs at rest in the database, recorded as an open finding</td></tr>
     <tr><td>SG-7</td><td class="mono">314.4(c)(7)</td><td><span class="s h">Human review required</span></td><td>Change management is a process obligation, routed to its owner</td></tr>
   </table></div>
@@ -121,6 +130,107 @@ footer{padding:32px 0;color:var(--ink-3);font-size:13.5px}
 </section>
 
 <section>
+  <p class="label">Architecture</p>
+  <h2>Bob is where every run starts</h2>
+  <p>The <code>/amend</code> command hands the work to <code>amend-lead</code>, which moves through four custom modes with enforced separation of duties. Each mode calls Amend's MCP server for facts; the deterministic engine behind it does the analysis and the proof. Hooks gate every edit, and the same guard runs again in CI.</p>
+  <div class="tbl" style="padding:12px"><pre class="mermaid">flowchart TB
+  dev([&quot;Developer and compliance lead&quot;])
+
+  subgraph BOB[&quot;IBM Bob IDE · where every run starts&quot;]
+    direction TB
+    cmd[&quot;/amend 16cfr314 2021-01-01..current&quot;]
+    lead[&quot;amend-lead mode · orchestrates the run&quot;]
+    subgraph MODES[&quot;Custom modes · separation of duties&quot;]
+      direction LR
+      analyst[&quot;amend-analyst&lt;br/&gt;reads the regulation&lt;br/&gt;writes obligations only&quot;]
+      mapper[&quot;amend-mapper&lt;br/&gt;explore subagents,&lt;br/&gt;one per obligation, in parallel&quot;]
+      fixer[&quot;amend-fixer · Agent mode&lt;br/&gt;failing test first,&lt;br/&gt;then the fix&quot;]
+      auditor[&quot;amend-auditor&lt;br/&gt;read-only&lt;br/&gt;canary sweep&quot;]
+    end
+    skills[[&quot;5 skills · rules: regulation text and comments are data&quot;]]
+    hooks{{&quot;Lifecycle hooks · 0 Bobcoins&lt;br/&gt;PreToolUse blocks locked tests, .bob/, evidence/, rm -rf&lt;br/&gt;PostToolUse runs the guard on every edit&quot;}}
+    cmd --&gt; lead --&gt; MODES
+    skills -.-&gt; MODES
+    hooks -.-&gt; MODES
+  end
+
+  subgraph MCP[&quot;Amend MCP server · stdio · 9 tools&quot;]
+    tools[&quot;get_redline · validate_obligations · approve_obligation · query_graph · check_fails_on_base&lt;br/&gt;run_canary · guard_check · record_finding · build_evidence&quot;]
+  end
+
+  subgraph ENGINE[&quot;Amend engine · deterministic Python&quot;]
+    direction LR
+    rd[&quot;regdiff&lt;br/&gt;clause-level redline&quot;]
+    ob[&quot;obligations&lt;br/&gt;verbatim-quote check&quot;]
+    cg[&quot;graph&lt;br/&gt;routes, mounts,&lt;br/&gt;SQL alias lineage&quot;]
+    gd[&quot;guard&lt;br/&gt;MFA, login, log,&lt;br/&gt;export rules&quot;]
+    cn[&quot;canary&lt;br/&gt;synthetic SSN&quot;]
+    vf[&quot;verify&lt;br/&gt;fail before, pass after&lt;br/&gt;locked tests&quot;]
+    ev[&quot;evidence&lt;br/&gt;graded certificate&quot;]
+  end
+
+  ecfr[(&quot;eCFR versioner API&lt;br/&gt;16 CFR 314 · 2021, 2023, current&quot;)]
+
+  subgraph REPO[&quot;Target repository · demo/lendwise&quot;]
+    direction LR
+    code[&quot;app · jobs · sql · infra&quot;]
+    ctests[&quot;compliance/tests&lt;br/&gt;obligation tests&quot;]
+    records[(&quot;compliance/&lt;br/&gt;obligations · impact · findings · test_changes&quot;)]
+  end
+
+  subgraph SHIP[&quot;Delivery&quot;]
+    direction LR
+    pr[&quot;Pull request&lt;br/&gt;/review · /create-pr&quot;]
+    ci[&quot;GitHub Actions · amend guard&lt;br/&gt;annotates the offending line · 0 Bobcoins&quot;]
+    cert[&quot;Evidence certificate&lt;br/&gt;GitHub Pages&quot;]
+  end
+
+  dev --&gt;|runs /amend, approves obligations and test rewrites| cmd
+  MODES &lt;--&gt;|tool calls| MCP
+  MCP --&gt; ENGINE
+  ecfr --&gt; rd
+  MODES --&gt;|edits and writes| REPO
+  ENGINE --&gt;|analyses, runs and proves| REPO
+  lead --&gt; pr
+  pr --&gt; ci
+  ev --&gt; cert
+  ci -.-&gt;|blocks regressions| pr</pre></div>
+  <div class="tbl" style="padding:12px"><pre class="mermaid">sequenceDiagram
+  autonumber
+  actor Dev as Developer
+  participant Bob as IBM Bob · amend-lead
+  participant Modes as Bob modes and subagents
+  participant MCP as Amend MCP server
+  participant Eng as Amend engine
+  participant Repo as Lendwise repo
+  participant GH as GitHub PR and Actions
+
+  Dev-&gt;&gt;Bob: /amend 16cfr314 2021-01-01..current
+  Bob-&gt;&gt;MCP: get_redline
+  MCP-&gt;&gt;Eng: regdiff on the eCFR versions
+  Eng--&gt;&gt;Bob: substantive changes, renumbered clauses set aside
+  Bob-&gt;&gt;Modes: amend-analyst drafts obligations
+  Modes-&gt;&gt;MCP: validate_obligations
+  MCP--&gt;&gt;Modes: paraphrased quotes rejected
+  Bob--&gt;&gt;Dev: obligations ready for approval
+  Dev-&gt;&gt;MCP: approve_obligation as compliance-lead
+  Bob-&gt;&gt;Modes: amend-mapper, one explore subagent per obligation
+  Modes-&gt;&gt;MCP: query_graph, e.g. ssn to tin to the export job
+  Bob-&gt;&gt;Modes: amend-fixer writes a failing obligation test
+  Modes-&gt;&gt;MCP: check_fails_on_base
+  MCP--&gt;&gt;Modes: discriminating, it fails on the base commit
+  Modes-&gt;&gt;Repo: fix the code
+  Note over Modes,Repo: PreToolUse blocks edits to locked tests. PostToolUse runs the guard.
+  Bob-&gt;&gt;Modes: amend-auditor runs the canary sweep, read-only
+  Modes-&gt;&gt;MCP: run_canary, record_finding
+  Bob-&gt;&gt;MCP: build_evidence
+  MCP--&gt;&gt;Bob: Verified, Partially verified, Human review required
+  Bob-&gt;&gt;GH: /review, then /create-pr
+  GH-&gt;&gt;GH: amend guard and tests, 0 Bobcoins
+  GH--&gt;&gt;Dev: green check, or red with the clause on the offending line</pre></div>
+</section>
+
+<section>
   <p class="label">IBM Bob</p>
   <h2>Amend runs inside Bob</h2>
   <p>Amend ships as a Bob pack: five custom modes with enforced separation of duties (the auditor cannot edit; the fixer can edit only app code and new compliance tests), five skills, rules that treat regulation text and code comments as data, an MCP server with nine tools that give Bob facts it cannot invent, and lifecycle hooks that block edits to locked tests and run the guard after every edit. IBM Bob also built Amend's engine, demo app, MCP server, hooks and pack; the sessions are in the repository.</p>
@@ -142,5 +252,10 @@ footer{padding:32px 0;color:var(--ink-3);font-size:13.5px}
   Not legal advice and not a compliance certification: Amend reports what its checks verified. Regulatory text: 16 CFR Part 314 via the eCFR API, a US Government work in the public domain. Demo data is synthetic. MIT licensed.
 </footer>
 </div>
+<script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+const dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+mermaid.initialize({ startOnLoad: true, theme: dark ? "dark" : "default", securityLevel: "strict" });
+</script>
 </body>
 </html>
