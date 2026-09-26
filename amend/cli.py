@@ -81,6 +81,9 @@ def cmd_validate(args: argparse.Namespace) -> None:
     to_date: str | None = args.to_date
 
     obligations = load(args.path)
+    if not obligations:
+        print(f"No obligations found in {args.path}", file=sys.stderr)
+        sys.exit(1)
 
     # Determine which versions to load
     dates_needed: set[str] = set()

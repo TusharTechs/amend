@@ -1,5 +1,10 @@
 """Tests for amend/obligations.py using real regulation XML files."""
+import subprocess
+import sys
+import textwrap
+
 import pytest
+import yaml
 from pathlib import Path
 
 from amend.regdiff import parse, diff
@@ -140,3 +145,120 @@ def test_reject_approved_without_approver(versions_both, redline_2021_2026):
     problems = validate([ob], versions_both, redline_2021_2026)
     assert any("approved_by" in str(p).lower() or "approved" in str(p).lower() for p in problems), \
         f"Expected approved_by problem, got: {problems}"
+
+
+# ---------------------------------------------------------------------------
+# load() — shape tests using temporary YAML files
+# ---------------------------------------------------------------------------
+
+def _base_record() -> dict:
+    """Minimal valid-looking obligation record (fields may be empty)."""
+    return {
+        "id": "OB-TEST-001",
+        "citation": "314.4(c)(5)",
+        "version": "2026-09-01",
+        "change": "added",
+        "quote": MFA_QUOTE,
+        "statement": "Test statement",
+        "shape": "code",
+        "status": "proposed",
+    }
+
+
+def test_load_list_form(tmp_path):
+    """load() must parse a top-level YAML list of records."""
+    rec = _base_record()
+    f = tmp_path / "list_form.yaml"
+    f.write_text(yaml.dump([rec]), encoding="utf-8")
+    result = load(f)
+    assert len(result) == 1
+    assert result[0].id == "OB-TEST-001"
+
+
+def test_load_obligations_key_form(tmp_path):
+    """load() must parse a mapping with an 'obligations' key."""
+    rec = _base_record()
+    f = tmp_path / "obligations_form.yaml"
+    f.write_text(yaml.dump({"obligations": [rec]}), encoding="utf-8")
+    result = load(f)
+    assert len(result) == 1
+    assert result[0].id == "OB-TEST-001"
+
+
+def test_load_single_record_form(tmp_path):
+    """load() must parse a single top-level mapping."""
+    rec = _base_record()
+    f = tmp_path / "single_record.yaml"
+    f.write_text(yaml.dump(rec), encoding="utf-8")
+    result = load(f)
+    assert len(result) == 1
+    assert result[0].id == "OB-TEST-001"
+
+
+def test_load_empty_file(tmp_path):
+    """load() on an empty file returns an empty list (no crash)."""
+    f = tmp_path / "empty.yaml"
+    f.write_text("", encoding="utf-8")
+    result = load(f)
+    assert result == []
+
+
+# ---------------------------------------------------------------------------
+# CLI — exit codes for empty and problem-containing files
+# ---------------------------------------------------------------------------
+
+def _run_validate(path: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, "-m", "amend.cli", "validate", path],
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_cli_validate_empty_file_exits_1(tmp_path):
+    """amend validate on an empty YAML file must exit 1 and name the file."""
+    f = tmp_path / "empty.yaml"
+    f.write_text("", encoding="utf-8")
+    result = _run_validate(str(f))
+    assert result.returncode == 1
+    assert str(f) in result.stderr
+
+
+def test_cli_validate_list_form_two_problems(tmp_path):
+    """
+    List-form file with one paraphrased quote and one 'approved' record with no
+    approver must exit 1 and report both problems.
+    """
+    records = [
+        # Record 1: paraphrased quote (not verbatim)
+        {
+            "id": "OB-LIST-001",
+            "citation": "314.4(c)(5)",
+            "version": "2026-09-01",
+            "change": "added",
+            "quote": "Implement MFA for all individuals accessing information systems",  # paraphrase
+            "statement": "MFA requirement paraphrased",
+            "shape": "code",
+            "status": "proposed",
+        },
+        # Record 2: approved but no approved_by
+        {
+            "id": "OB-LIST-002",
+            "citation": "314.4(c)(5)",
+            "version": "2026-09-01",
+            "change": "added",
+            "quote": MFA_QUOTE,
+            "statement": "MFA requirement approved without approver",
+            "shape": "code",
+            "status": "approved",
+            # approved_by intentionally omitted
+        },
+    ]
+    f = tmp_path / "list_problems.yaml"
+    f.write_text(yaml.dump(records), encoding="utf-8")
+    result = _run_validate(str(f))
+    assert result.returncode == 1
+    combined = result.stdout + result.stderr
+    # Both problems must be reported
+    assert "OB-LIST-001" in combined, f"Expected OB-LIST-001 in output:\n{combined}"
+    assert "OB-LIST-002" in combined, f"Expected OB-LIST-002 in output:\n{combined}"

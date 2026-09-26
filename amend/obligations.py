@@ -48,7 +48,15 @@ class ValidationProblem:
 
 
 def load(path: str | Path) -> list[Obligation]:
-    """Load one YAML file or every *.yaml in a folder."""
+    """Load one YAML file or every *.yaml in a folder.
+
+    Accepts three top-level shapes per YAML document:
+    - A list of obligation records
+    - A mapping with an "obligations" key whose value is a list
+    - A single obligation record (plain mapping)
+
+    Anything else raises ValueError naming the file.
+    """
     p = Path(path)
     if p.is_dir():
         files = sorted(p.glob("*.yaml"))
@@ -60,13 +68,24 @@ def load(path: str | Path) -> list[Obligation]:
         with open(f, "r", encoding="utf-8") as fh:
             docs = list(yaml.safe_load_all(fh))
         for doc in docs:
-            if not isinstance(doc, dict):
+            if doc is None:
+                # Empty document — skip silently
                 continue
-            # Support a top-level list or a single record
-            if isinstance(doc.get("obligations"), list):
-                items = doc["obligations"]
+            if isinstance(doc, list):
+                # Top-level list of records
+                items = doc
+            elif isinstance(doc, dict):
+                if isinstance(doc.get("obligations"), list):
+                    # Mapping with an "obligations" key
+                    items = doc["obligations"]
+                else:
+                    # Single obligation record
+                    items = [doc]
             else:
-                items = [doc]
+                raise ValueError(
+                    f"{f}: unexpected top-level YAML type {type(doc).__name__!r}; "
+                    "expected a list, a mapping with 'obligations', or a single record"
+                )
             for item in items:
                 ob = _dict_to_obligation(item)
                 obligations.append(ob)
