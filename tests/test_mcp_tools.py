@@ -169,3 +169,23 @@ def test_record_finding_writes_to_findings_json(monkeypatch, tmp_path):
     assert entry["line"] == 67
     assert entry["status"] == "open"
     assert entry["source"] == "guard"
+
+
+def test_approve_obligation_refuses_unlisted_approver(monkeypatch, tmp_path):
+    """Only approvers named in compliance/amend.yaml can approve an obligation."""
+    import amend.mcp_server as srv
+
+    app = tmp_path / "app"
+    (app / "compliance" / "obligations").mkdir(parents=True)
+    (app / "compliance" / "amend.yaml").write_text("approvers:\n  - compliance-lead\n")
+    ob = app / "compliance" / "obligations" / "SG-5.yaml"
+    ob.write_text("id: SG-5\nstatus: proposed\n")
+    monkeypatch.setattr(srv, "_app", app)
+
+    refused = srv.approve_obligation("SG-5", "amend-fixer")
+    assert refused["ok"] is False
+    assert "status: proposed" in ob.read_text()
+
+    approved = srv.approve_obligation("SG-5", "compliance-lead")
+    assert approved["ok"] is True
+    assert "approved_by: compliance-lead" in ob.read_text()
