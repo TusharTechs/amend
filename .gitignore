@@ -27,6 +27,7 @@ demo/lendwise/var/
 # Environment
 .env
 .env.*
+!.env.example
 
 # Database
 *.db

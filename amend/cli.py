@@ -7,6 +7,10 @@ Usage:
   amend graph [--repo REPO] [--out FILE]
   amend canary [--repo REPO] [--json FILE]
   amend guard [--repo REPO] [--json FILE]
+  amend verify [--repo REPO] [--base REF]
+  amend evidence [--run-id ID] [--repo REPO] [--base REF]
+  amend draft --from DATE --to DATE [--repo REPO] [--limit N]   (IBM Granite on watsonx.ai)
+  amend screen [--repo REPO] [--json FILE]                     (IBM Granite on watsonx.ai)
 """
 from __future__ import annotations
 
@@ -185,6 +189,23 @@ def main() -> None:
                             help="Base git ref (default: HEAD~1)")
     evidence_p.set_defaults(func=cmd_evidence)
 
+    # draft subcommand (optional, IBM Granite on watsonx.ai)
+    draft_p = subparsers.add_parser("draft", help="Draft obligations with IBM Granite on watsonx.ai")
+    draft_p.add_argument("--from", dest="from_date", required=True, metavar="DATE")
+    draft_p.add_argument("--to", dest="to_date", required=True, metavar="DATE")
+    draft_p.add_argument("--repo", default="demo/lendwise", metavar="REPO",
+                         help="Path to target repo (default: demo/lendwise)")
+    draft_p.add_argument("--limit", type=int, default=None, metavar="N",
+                         help="Draft at most N clauses")
+    draft_p.set_defaults(func=_cmd_draft)
+
+    # screen subcommand (optional, IBM Granite on watsonx.ai)
+    screen_p = subparsers.add_parser("screen", help="Screen comments and docstrings for prompt injection")
+    screen_p.add_argument("--repo", default="demo/lendwise", metavar="REPO",
+                          help="Path to target repo (default: demo/lendwise)")
+    screen_p.add_argument("--json", default=None, metavar="FILE", help="Write the result to JSON file")
+    screen_p.set_defaults(func=_cmd_screen)
+
     args = parser.parse_args()
     args.func(args)
 
@@ -197,6 +218,16 @@ def _cmd_graph(args: argparse.Namespace) -> None:
 def _cmd_canary(args: argparse.Namespace) -> None:
     from amend.canary import cmd_canary
     cmd_canary(args)
+
+
+def _cmd_draft(args: argparse.Namespace) -> None:
+    from amend.draft import cmd_draft
+    cmd_draft(args)
+
+
+def _cmd_screen(args: argparse.Namespace) -> None:
+    from amend.screen import cmd_screen
+    cmd_screen(args)
 
 
 def _cmd_guard(args: argparse.Namespace) -> None:

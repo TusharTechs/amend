@@ -1,0 +1,163 @@
+# Drafted by ibm/granite-4-h-small on IBM watsonx.ai from the verbatim clause text, then checked by
+# `amend validate`. Status is proposed: nothing here is approved or in force.
+- id: GR-3142m-1
+  citation: 314.2(m)
+  version: '2026-09-01'
+  change: added
+  quote: Notification event means acquisition of unencrypted customer information without the authorization
+    of the individual to which the information pertains.
+  statement: The software must detect and log any instances where unencrypted customer information is
+    accessed without proper authorization.
+  shape: code
+  status: proposed
+  exceptions: []
+- id: GR-3142m-2
+  citation: 314.2(m)
+  version: '2026-09-01'
+  change: added
+  quote: Customer information is considered unencrypted for this purpose if the encryption key was accessed
+    by an unauthorized person.
+  statement: The system must treat customer information as unencrypted if the encryption key is accessed
+    by an unauthorized individual.
+  shape: code
+  status: proposed
+  exceptions: []
+- id: GR-3142m-3
+  citation: 314.2(m)
+  version: '2026-09-01'
+  change: added
+  quote: Unauthorized acquisition will be presumed to include unauthorized access to unencrypted customer
+    information unless you have reliable evidence showing that there has not been, or could not reasonably
+    have been, unauthorized acquisition of such information.
+  statement: The team must assume unauthorized access to unencrypted customer information has occurred
+    unless there is reliable evidence proving otherwise.
+  shape: process
+  status: proposed
+  exceptions: []
+- id: GR-3144j-1
+  citation: 314.4(j)
+  version: '2026-09-01'
+  change: added
+  quote: Notify the Federal Trade Commission about notification events in accordance with paragraphs (j)(1)
+    and (2) of this section.
+  statement: The engineering team must implement a process to notify the Federal Trade Commission about
+    notification events as specified in paragraphs (j)(1) and (2) of this section.
+  shape: process
+  status: proposed
+  exceptions: []
+- id: GR-3144j1-1
+  citation: 314.4(j)(1)
+  version: '2026-09-01'
+  change: added
+  quote: if the notification event involves the information of at least 500 consumers, you must notify
+    the Federal Trade Commission as soon as possible, and no later than 30 days after discovery of the
+    event.
+  statement: The engineering team must implement a system to detect notification events and, if they involve
+    at least 500 consumers' information, automatically notify the FTC within 30 days of discovery.
+  shape: process
+  status: proposed
+  exceptions: []
+- id: GR-3144j1-2
+  citation: 314.4(j)(1)
+  version: '2026-09-01'
+  change: added
+  quote: The notice shall be made electronically on a form to be located on the FTC's website, https://www.ftc.gov.
+  statement: The team must create an automated process to submit the required notice electronically through
+    the FTC's online form at https://www.ftc.gov.
+  shape: code
+  status: proposed
+  exceptions: []
+- id: GR-3144j1-3
+  citation: 314.4(j)(1)
+  version: '2026-09-01'
+  change: added
+  quote: 'The notice shall include the following:'
+  statement: The team must ensure the notification includes all required information as specified in the
+    subsequent text of the regulation.
+  shape: contract
+  status: proposed
+  exceptions: []
+- id: GR-3144j1i-1
+  citation: 314.4(j)(1)(i)
+  version: '2026-09-01'
+  change: added
+  quote: The name and contact information of the reporting financial institution;
+  statement: The software must collect and store the name and contact information of the reporting financial
+    institution.
+  shape: code
+  status: proposed
+  exceptions: []
+- id: GR-3144j1ii-1
+  citation: 314.4(j)(1)(ii)
+  version: '2026-09-01'
+  change: added
+  quote: A description of the types of information that were involved in the notification event;
+  statement: The software must provide a detailed description of the types of information that were involved
+    in the notification event.
+  shape: code
+  status: proposed
+  exceptions: []
+- id: GR-3144j1iii-1
+  citation: 314.4(j)(1)(iii)
+  version: '2026-09-01'
+  change: added
+  quote: If the information is possible to determine, the date or date range of the notification event;
+  statement: The software must record and store the date or date range when a notification event occurs,
+    if that information is available.
+  shape: code
+  status: proposed
+  exceptions: []
+- id: GR-3144j1iv-1
+  citation: 314.4(j)(1)(iv)
+  version: '2026-09-01'
+  change: added
+  quote: The number of consumers affected or potentially affected by the notification event;
+  statement: The software must calculate and display the total number of consumers impacted or at risk
+    due to the notification event.
+  shape: code
+  status: proposed
+  exceptions: []
+- id: GR-3144j1v-1
+  citation: 314.4(j)(1)(v)
+  version: '2026-09-01'
+  change: added
+  quote: A general description of the notification event;
+  statement: The software must provide a user-friendly summary of the event that triggered the notification,
+    including relevant details such as the type of event, affected components, and timestamps.
+  shape: code
+  status: proposed
+  exceptions: []
+- id: GR-3144j1vi-1
+  citation: 314.4(j)(1)(vi)
+  version: '2026-09-01'
+  change: added
+  quote: Whether any law enforcement official has provided you with a written determination that notifying
+    the public of the breach would impede a criminal investigation or cause damage to national security,
+    and a means for the Federal Trade Commission to contact the law enforcement official.
+  statement: The engineering team must implement a process to verify and store written determinations
+    from law enforcement officials regarding the potential impact of breach notification on criminal investigations
+    or national security, and ensure the Federal Trade Commission can contact the officials.
+  shape: process
+  status: proposed
+  exceptions: []
+- id: GR-3144j2-1
+  citation: 314.4(j)(2)
+  version: '2026-09-01'
+  change: added
+  quote: A notification event shall be treated as discovered as of the first day on which such event is
+    known to you.
+  statement: The software must record the date when a notification event is first known to the organization.
+  shape: code
+  status: proposed
+  exceptions: []
+- id: GR-3144j2-2
+  citation: 314.4(j)(2)
+  version: '2026-09-01'
+  change: added
+  quote: You shall be deemed to have knowledge of a notification event if such event is known to any person,
+    other than the person committing the breach, who is your employee, officer, or other agent.
+  statement: The system must consider a notification event discovered if any employee, officer, or agent
+    of the organization becomes aware of it, excluding the person who caused the breach.
+  shape: code
+  status: proposed
+  exceptions: []

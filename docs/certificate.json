@@ -1,10 +1,10 @@
 {
   "meta": {
     "run_id": "ftc-2024",
-    "generated_at": "2026-09-26T14:57:35.581920+00:00",
+    "generated_at": "2026-09-26T15:15:44.752171+00:00",
     "base_ref": "main",
-    "base_sha": "d75abd1259d2003fb5abc38834ea803872c6f26a",
-    "head_sha": "531601f4e336c9d630bce58f6cb9971dfcf0a5ac"
+    "base_sha": "c650b46b2fdeb08bea1f0f274070d865aa44b38b",
+    "head_sha": "b0ce9db0d8648ad40e32f64a10da31dd3f66c8fd"
   },
   "status_counts": {
     "Partially verified": 1,
@@ -209,7 +209,7 @@
         "store_type": "sqlite",
         "path": "var/lendwise.db",
         "offset_or_line": 147993,
-        "snippet": ".371469B\ufffdp\b\u0000\u0002#\u001f\u0003\u001bA\u0002Y000-**-****000000417\u0000\ufffd\ufffdpending2",
+        "snippet": ".519299B\ufffdp\b\u0000\u0002#\u001f\u0003\u001bA\u0002Y000-**-****000000417\u0000\ufffd\ufffdpending2",
         "value_found": "000-00-0417"
       },
       {
@@ -230,14 +230,14 @@
         "store_type": "log",
         "path": "var/log/app.log",
         "offset_or_line": 2,
-        "snippet": "2026-09-26 20:27:35,367 DEBUG lendwise.http incoming request method=POST path=/api/v1/applications/ body={\"customer_id\":601,\"ssn\":\"000-**-****\",\"bank_account_number\":\"000000417\",\"income\":41700.0}",
+        "snippet": "2026-09-26 20:45:44,515 DEBUG lendwise.http incoming request method=POST path=/api/v1/applications/ body={\"customer_id\":601,\"ssn\":\"000-**-****\",\"bank_account_number\":\"000000417\",\"income\":41700.0}",
         "value_found": "000-00-0417"
       },
       {
         "store_type": "log",
         "path": "var/log/app.log",
         "offset_or_line": 2,
-        "snippet": "2026-09-26 20:27:35,367 DEBUG lendwise.http incoming request method=POST path=/api/v1/applications/ body={\"customer_id\":601,\"ssn\":\"000-00-0417\",\"bank_account_number\":\"000***\",\"income\":41700.0}",
+        "snippet": "2026-09-26 20:45:44,515 DEBUG lendwise.http incoming request method=POST path=/api/v1/applications/ body={\"customer_id\":601,\"ssn\":\"000-00-0417\",\"bank_account_number\":\"000***\",\"income\":41700.0}",
         "value_found": "000000417"
       },
       {
@@ -267,7 +267,7 @@
         "store_type": "sqlite",
         "path": "var/lendwise.db",
         "offset_or_line": 160281,
-        "snippet": ".356805B\ufffdp\b\u0000\u0002#\u001f\u0003\u001bA\u0002Y000-**-****000000417\u0000\ufffd\ufffdpending2",
+        "snippet": ".387165B\ufffdp\b\u0000\u0002#\u001f\u0003\u001bA\u0002Y000-**-****000000417\u0000\ufffd\ufffdpending2",
         "value_found": "000-00-0417"
       },
       {
@@ -424,12 +424,12 @@
     },
     {
       "file": "evidence/ftc-2024/certificate.html",
-      "insertions": 0,
+      "insertions": 121,
       "deletions": 0
     },
     {
       "file": "evidence/ftc-2024/certificate.json",
-      "insertions": 457,
+      "insertions": 482,
       "deletions": 0
     },
     {
@@ -474,9 +474,9 @@
   },
   "artifact_hashes": {
     "matrix.json": "0a6b48c95274e3ff8c3301a7291e3cad1ac6abb8941a58c229183959498fa4cb",
-    "certificate.json": "ac134fc48e02ed4fdc20fab75c1236d336b544939303ef37a288af5f3669c222",
-    "certificate.md": "b497b0f4b9c5f348fc6262df945e35f112e50a94840d9691e3e3a8e2e92e15dc",
-    "certificate.html": "57543b4b4736fab9f6754be0f83ac0a004b366f93e33928f8f680e31ffe5da27"
+    "certificate.json": "5d0d6130bfe93f208c13cceeaebb48579d31758bd79ea3d10ea8f1501e2998d5",
+    "certificate.md": "ab17f53065b0a3f2b64177b9c058969f053c393983beb2db5db9b97d8cb13752",
+    "certificate.html": "b347e5b516c1efa8e34afd2203f7c4d4654388baae130b8bb9c423079e9c8d96"
   },
   "disclaimer": "Impact discovery recall on the Amend benchmark: see benchmark/results; unknown paths may exist. This report states what automated checks verified. It is not a legal opinion and does not assert compliance."
 }
