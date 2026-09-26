@@ -285,7 +285,7 @@ def _check_log(g: Graph, data_classes: dict[str, list[str]]) -> list[Failure]:
                     rule="G-LOG",
                     clause=_LOG_CLAUSE,
                     message=(
-                        f"Log call passes sensitive argument: {sensitive_args[0]!r}"
+                        f"Log call passes sensitive argument: {sensitive_args[0]}"
                     ),
                 )
             )
