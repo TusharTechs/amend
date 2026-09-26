@@ -41,6 +41,17 @@ def _app_dir(repo_root: Path, cfg: dict) -> Path:
     return (repo_root / app_rel).resolve()
 
 
+def _approvers(app: Path, cfg: dict) -> list[str]:
+    """Approvers named in the target app's compliance/amend.yaml (or the server config)."""
+    app_cfg = app / "compliance" / "amend.yaml"
+    if app_cfg.exists():
+        with open(app_cfg) as fh:
+            listed = (yaml.safe_load(fh) or {}).get("approvers")
+        if listed:
+            return [str(a) for a in listed]
+    return [str(a) for a in cfg.get("approvers", []) or []]
+
+
 def _events_path(repo_root: Path) -> Path:
     d = repo_root / ".amend"
     d.mkdir(exist_ok=True)
@@ -155,6 +166,10 @@ def validate_obligations() -> dict:
 def approve_obligation(obligation_id: str, approver: str) -> dict:
     """Set status=approved and approved_by on an obligation YAML, preserving all other fields."""
     repo_root, app, cfg = _ctx()
+    approvers = _approvers(app, cfg)
+    if approvers and approver not in approvers:
+        _append_event(repo_root, "approve_obligation", f"{obligation_id} refused for {approver!r}")
+        return {"ok": False, "error": f"{approver!r} is not a listed approver", "approvers": approvers}
     ob_dir = app / "compliance" / "obligations"
     target: Path | None = None
     for f in sorted(ob_dir.glob("*.yaml")):
