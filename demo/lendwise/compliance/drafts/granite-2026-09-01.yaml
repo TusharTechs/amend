@@ -6,8 +6,8 @@
   change: added
   quote: Notification event means acquisition of unencrypted customer information without the authorization
     of the individual to which the information pertains.
-  statement: The software must detect and log any instances where unencrypted customer information is
-    accessed without proper authorization.
+  statement: The system must detect and log any instances where unencrypted customer information is accessed
+    without proper authorization.
   shape: code
   status: proposed
   exceptions: []
@@ -18,7 +18,7 @@
   quote: Customer information is considered unencrypted for this purpose if the encryption key was accessed
     by an unauthorized person.
   statement: The system must treat customer information as unencrypted if the encryption key is accessed
-    by an unauthorized individual.
+    by an unauthorized user.
   shape: code
   status: proposed
   exceptions: []
@@ -29,9 +29,9 @@
   quote: Unauthorized acquisition will be presumed to include unauthorized access to unencrypted customer
     information unless you have reliable evidence showing that there has not been, or could not reasonably
     have been, unauthorized acquisition of such information.
-  statement: The team must assume unauthorized access to unencrypted customer information has occurred
+  statement: The system must assume unauthorized access to unencrypted customer information has occurred
     unless there is reliable evidence proving otherwise.
-  shape: process
+  shape: code
   status: proposed
   exceptions: []
 - id: GR-3144j-1
@@ -53,7 +53,8 @@
     the Federal Trade Commission as soon as possible, and no later than 30 days after discovery of the
     event.
   statement: The engineering team must implement a system to detect notification events and, if they involve
-    at least 500 consumers' information, automatically notify the FTC within 30 days of discovery.
+    at least 500 consumers' information, trigger an automated notification to the FTC within 30 days of
+    discovery.
   shape: process
   status: proposed
   exceptions: []
@@ -62,8 +63,8 @@
   version: '2026-09-01'
   change: added
   quote: The notice shall be made electronically on a form to be located on the FTC's website, https://www.ftc.gov.
-  statement: The team must create an automated process to submit the required notice electronically through
-    the FTC's online form at https://www.ftc.gov.
+  statement: The team must create an electronic notification form that complies with the FTC's specifications
+    and is hosted on the provided website URL.
   shape: code
   status: proposed
   exceptions: []
@@ -92,8 +93,8 @@
   version: '2026-09-01'
   change: added
   quote: A description of the types of information that were involved in the notification event;
-  statement: The software must provide a detailed description of the types of information that were involved
-    in the notification event.
+  statement: The software must provide a description of the types of information involved in the notification
+    event.
   shape: code
   status: proposed
   exceptions: []
@@ -102,7 +103,7 @@
   version: '2026-09-01'
   change: added
   quote: If the information is possible to determine, the date or date range of the notification event;
-  statement: The software must record and store the date or date range when a notification event occurs,
+  statement: The software must record and display the date or date range when a notification event occurred,
     if that information is available.
   shape: code
   status: proposed
@@ -122,8 +123,7 @@
   version: '2026-09-01'
   change: added
   quote: A general description of the notification event;
-  statement: The software must provide a user-friendly summary of the event that triggered the notification,
-    including relevant details such as the type of event, affected components, and timestamps.
+  statement: The software must provide a general description of the notification event.
   shape: code
   status: proposed
   exceptions: []
@@ -156,8 +156,8 @@
   change: added
   quote: You shall be deemed to have knowledge of a notification event if such event is known to any person,
     other than the person committing the breach, who is your employee, officer, or other agent.
-  statement: The system must consider a notification event discovered if any employee, officer, or agent
-    of the organization becomes aware of it, excluding the person who caused the breach.
+  statement: The software must consider a notification event as known if any employee, officer, or agent
+    of the organization is aware of it, excluding the person who committed the breach.
   shape: code
   status: proposed
   exceptions: []

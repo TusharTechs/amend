@@ -197,7 +197,7 @@ Two optional steps call IBM Granite (`ibm/granite-4-h-small`) on watsonx.ai. Bot
 Results on this repository, at temperature 0:
 
 - **Screen:** 48 comments and docstrings, 1 flagged: the planted `NOTE TO AI AGENTS` comment in `jobs/export_underwriting.py`. Same result in 3 of 3 runs, no false positives.
-- **Draft:** the 2024 amendment (2023-07-01 to 2026-09-01), 12 substantive clauses, 15 drafts, 15 verbatim quotes, in [`granite-2026-09-01.yaml`](demo/lendwise/compliance/drafts/granite-2026-09-01.yaml). Some statements still need a human edit (one says the software must host the FTC's notice form), which is why a draft is never approved automatically.
+- **Draft:** the 2024 amendment (2023-07-01 to 2026-09-01), 12 substantive clauses, 15 drafts, 15 verbatim quotes, in [`granite-2026-09-01.yaml`](demo/lendwise/compliance/drafts/granite-2026-09-01.yaml). Some statements still need a human edit (one says the team must build the FTC's electronic notice form, which the FTC provides), which is why a draft is never approved automatically.
 - **Why grounding matters:** asked from memory what §314.4(c)(5) requires, the same model described an unrelated antitrust filing rule. Given the clause text, it quoted the clause exactly.
 
 Setup: copy `.env.example` to `.env` and set `IBM_API_KEY` and `WATSONX_PROJECT_ID` (a watsonx.ai project with a Runtime associated, in the region of `WATSONX_URL`). Replies are cached in `.amend/watsonx_cache.json`; the key is never printed or stored. Without these variables every other command works as before, and the tests mock watsonx.ai. Granite Guardian 3 was tried first, but watsonx.ai withdraws it on 30 September 2026, so both steps use Granite 4.
