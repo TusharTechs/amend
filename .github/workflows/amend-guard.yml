@@ -12,13 +12,22 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
       - name: Guard, citing the clause for every failure
-        run: amend guard --repo demo/lendwise
+        # Each failure is also emitted as an annotation on the offending line.
+        run: |
+          rc=0
+          amend guard --repo demo/lendwise --json guard.json || rc=$?
+          python - <<'PY'
+          import json
+          for f in json.load(open("guard.json")):
+              print(f"::error file=demo/lendwise/{f['file']},line={f['line']},title={f['rule']} · {f['clause']}::{f['message']}")
+          PY
+          exit $rc
       - name: Lendwise regression and obligation tests
         run: pytest -q demo/lendwise
 
@@ -29,8 +38,8 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
