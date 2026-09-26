@@ -50,7 +50,7 @@ def draft(old: Version, new: Version, client: WatsonxClient, limit: int | None =
                                  list_key="obligations")
         return entry, reply.get("obligations", []) or []
 
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    with ThreadPoolExecutor(max_workers=2) as pool:
         replies = list(pool.map(one, targets))
 
     results = []

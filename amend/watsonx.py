@@ -25,6 +25,7 @@ DEFAULT_MODEL = "ibm/granite-4-h-small"
 API_VERSION = "2024-10-08"
 IAM_URL = "https://iam.cloud.ibm.com/identity/token"
 USER_AGENT = "amend/0.1 watsonx-client"
+RETRIES = 4
 
 
 class WatsonxError(RuntimeError):
@@ -123,6 +124,7 @@ class WatsonxClient:
         self.calls = 0
         self.cache_hits = 0
         self.tokens_used = 0
+        self.backoff = 2.0
 
     # ── auth ────────────────────────────────────────────────────────────────
     def _bearer(self) -> str:
@@ -167,8 +169,12 @@ class WatsonxClient:
             return cached
         body = {"model_id": self.config.model, "project_id": self.config.project_id, "messages": messages,
                 "max_tokens": max_tokens, "temperature": 0}
-        resp = self._http.post(f"{self.config.url}/ml/v1/text/chat", params={"version": API_VERSION}, json=body,
-                               headers={"Authorization": f"Bearer {self._bearer()}"})
+        for attempt in range(RETRIES + 1):
+            resp = self._http.post(f"{self.config.url}/ml/v1/text/chat", params={"version": API_VERSION}, json=body,
+                                   headers={"Authorization": f"Bearer {self._bearer()}"})
+            if resp.status_code != 429 or attempt == RETRIES:
+                break
+            time.sleep(self.backoff * 2 ** attempt)  # free plans cap concurrent requests
         if resp.status_code != 200:
             try:
                 detail = resp.json().get("errors", [{}])[0].get("message", "")
