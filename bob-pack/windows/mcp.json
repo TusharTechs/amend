@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "amend": {
+      "command": "C:\\path\\to\\amend\\.venv\\Scripts\\python.exe",
+      "args": ["-m", "amend.mcp_server"],
+      "env": { "AMEND_HOME": "C:\\path\\to\\amend" }
+    }
+  }
+}

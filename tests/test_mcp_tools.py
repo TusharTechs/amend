@@ -189,3 +189,12 @@ def test_approve_obligation_refuses_unlisted_approver(monkeypatch, tmp_path):
     approved = srv.approve_obligation("SG-5", "compliance-lead")
     assert approved["ok"] is True
     assert "approved_by: compliance-lead" in ob.read_text()
+
+
+def test_repo_root_from_amend_home(monkeypatch, tmp_path):
+    """Bob can start MCP servers from any directory; AMEND_HOME points at the repository."""
+    import amend.mcp_server as srv
+
+    monkeypatch.setenv("AMEND_HOME", str(tmp_path))
+    monkeypatch.chdir("/")
+    assert srv._find_repo_root() == tmp_path.resolve()

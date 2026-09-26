@@ -346,7 +346,7 @@ def run_canary(repo_root: Path | str, json_out: str | None = None) -> list[dict]
 def _display_path(path: str, repo_root: Path) -> str:
     """Path relative to the target repo, so output never shows the home folder."""
     try:
-        return str(Path(path).resolve().relative_to(repo_root.resolve()))
+        return Path(path).resolve().relative_to(repo_root.resolve()).as_posix()
     except ValueError:
         return path
 

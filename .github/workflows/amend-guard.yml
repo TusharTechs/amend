@@ -34,9 +34,13 @@ jobs:
   engine:
     # Engine tests run against the seeded Lendwise on main, where the
     # 13 planted violations are expected to be found.
-    name: Engine tests
+    name: Engine tests (${{ matrix.os }})
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6

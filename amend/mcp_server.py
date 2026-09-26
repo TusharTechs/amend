@@ -5,6 +5,7 @@ Run via:  python -m amend.mcp_server
 from __future__ import annotations
 
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,7 +19,11 @@ from mcp.server.mcpserver import MCPServer as FastMCP
 # ---------------------------------------------------------------------------
 
 def _find_repo_root() -> Path:
-    """Walk up from cwd looking for compliance/amend.yaml."""
+    """AMEND_HOME when set (Bob may start MCP servers from /), else walk up from cwd
+    looking for compliance/amend.yaml."""
+    home = os.environ.get("AMEND_HOME")
+    if home and Path(home).expanduser().is_dir():
+        return Path(home).expanduser().resolve()
     p = Path.cwd()
     for candidate in [p, *p.parents]:
         if (candidate / "compliance" / "amend.yaml").exists():
@@ -331,7 +336,7 @@ def draft_obligations(from_date: str = "", to_date: str = "", limit: int = 0) ->
     rejected = [{"id": r["obligation"].id, "problems": r["problems"]} for res in results for r in res["rejected"]]
     _append_event(repo_root, "draft_obligations", f"{n} proposed, {len(rejected)} rejected by the validator")
     return {"ok": True, "model": client.config.model, "proposed": n, "rejected": rejected,
-            "written": str(out.relative_to(repo_root)) if out.is_relative_to(repo_root) else str(out),
+            "written": out.relative_to(repo_root).as_posix() if out.is_relative_to(repo_root) else out.as_posix(),
             "next": "review the drafts; approve_obligation is still required for each"}
 
 

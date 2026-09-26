@@ -291,9 +291,9 @@ class Graph:
 
 def _rel(path: Path, repo_root: Path) -> str:
     try:
-        return str(path.relative_to(repo_root))
+        return path.relative_to(repo_root).as_posix()
     except ValueError:
-        return str(path)
+        return path.as_posix()
 
 
 def _decorator_names(dec_list: list) -> list[str]:

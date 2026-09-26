@@ -250,7 +250,7 @@ def _run_state(returncode: int) -> str:
 def _rel(path: Path) -> str:
     """Path relative to the current directory when possible, never the home folder."""
     try:
-        return str(path.resolve().relative_to(Path.cwd().resolve()))
+        return path.resolve().relative_to(Path.cwd().resolve()).as_posix()
     except ValueError:
         return str(path)
 
